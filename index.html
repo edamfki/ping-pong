@@ -1,0 +1,1105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ping Pong Tournament Draw</title>
+<style>
+:root{--petrol:#009999;--dark:#0b3c49;--bg:#f2f5f7;--card:#fff;--line:#d5dde2;--ok:#1b9e4b;--bad:#d33}
+*{box-sizing:border-box}
+body{margin:0;font-family:Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:#1c2b33}
+header{background:var(--dark);color:#fff;padding:14px 22px;display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between}
+header h1{margin:0;font-size:20px;letter-spacing:.3px}
+header h1 small{display:block;font-weight:400;font-size:12px;opacity:.75;margin-top:2px}
+.status{font-size:12px;padding:4px 9px;border-radius:12px;background:#ffffff22}.status.ok{background:#1b9e4b}.status.warn{background:#d98a00}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button,select{font:inherit;border-radius:6px;border:1px solid transparent;padding:7px 13px;cursor:pointer}
+button.primary{background:var(--petrol);color:#fff;font-weight:600}
+button.primary:hover{filter:brightness(1.1)}
+button.ghost{background:transparent;color:#fff;border-color:#ffffff66}
+button.ghost:hover{background:#ffffff22}
+select{background:#fff;color:#1c2b33}
+main{max-width:1500px;margin:0 auto;padding:18px}
+h2{font-size:16px;margin:26px 0 10px;color:var(--dark);text-transform:uppercase;letter-spacing:.6px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+details.panel summary{cursor:pointer;font-weight:600;color:var(--dark)}
+textarea{width:100%;min-height:120px;margin-top:10px;font:14px/1.6 Consolas,monospace;border:1px solid var(--line);border-radius:6px;padding:8px}
+.msg{margin-top:8px;font-size:13px;color:var(--bad)}
+.tiers{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:10px}
+.tier{border:1px solid var(--line);border-radius:8px;overflow:hidden;font-size:13px;background:#fff}
+.tier b{display:block;background:#e6eef1;padding:5px 8px;font-size:12px}
+.tier span{display:block;padding:3px 8px}
+.pool-b{overflow-x:auto}
+.pools{display:grid;grid-template-columns:repeat(auto-fill,minmax(780px,1fr));gap:16px}
+.pool{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;animation:pop .4s ease both}
+@keyframes pop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.pool-h{padding:9px 14px;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+.pool-h small{font-weight:500;opacity:.7}
+.pA .pool-h{background:#c5d6ec}.pB .pool-h{background:#d0e0ad}.pC .pool-h{background:#f8b0b0}.pD .pool-h{background:#fff09a}
+.pool-b{padding:10px 14px}
+.plist{display:grid;grid-template-columns:1fr 1fr;gap:3px 12px;margin-bottom:8px;font-size:14px}
+.badge{display:inline-block;min-width:22px;text-align:center;border-radius:10px;background:#e6eef1;font-size:11px;padding:1px 6px;margin-right:6px;color:#456}
+.round{font-size:11px;text-transform:uppercase;color:#789;letter-spacing:.6px;margin:8px 0 3px}
+.round i{text-transform:none;letter-spacing:0}
+.m{display:grid;grid-template-columns:70px 1fr auto 1fr 74px 178px;align-items:center;gap:5px;padding:3px 0;font-size:14px}
+.m .l{text-align:right}
+.m .rn{font-size:12px;font-weight:600;color:#567;white-space:nowrap}
+.m.rf:not(:first-of-type){border-top:1px solid #e3eaee;margin-top:3px;padding-top:6px}
+input.tmI{font:inherit;font-size:11px;padding:3px 4px;border:1px solid var(--line);border-radius:5px;background:#fff;color:#456;width:178px}
+input.tmI.cus,.sct .t.cus{color:#c2410c;font-weight:700}
+input.tmI.cus{border-color:#c2410c}
+.bmsel{margin-top:3px}.bmsel input.tmI{width:100%}.bmsel2{margin-top:3px}
+.m .sep{text-align:center;color:#99a}
+.w{font-weight:700;color:var(--ok)}
+input.sc{width:44px;padding:4px;text-align:center;border:1px solid var(--line);border-radius:5px;font:inherit;-moz-appearance:textfield}
+input.sc::-webkit-outer-spin-button,input.sc::-webkit-inner-spin-button{-webkit-appearance:none}
+small.dy{margin-left:8px;font-weight:400;color:#789;font-size:11px}
+.sch{overflow-x:auto}.schc{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:6px;font-size:13px}
+.schc input,.schc select{padding:3px 5px;border:1px solid var(--line);border-radius:5px;font:inherit}
+.sdh{margin:14px 0 4px;font-weight:600;color:var(--dark);border-bottom:2px solid var(--petrol);padding-bottom:3px}
+.sdh small{margin-left:10px;font-weight:400;color:#789;font-size:12px}
+table.sct{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
+table.sct td{padding:3px 6px;border-bottom:1px solid #edf1f3}
+table.sct .t{width:74px;font-weight:600}.sct .tb{width:72px;color:#789}.sct .tg{width:130px;color:#789}.sct .l{text-align:right}.sct .vs{width:34px;text-align:center;color:#99a}.sct .rs{width:84px;text-align:center;color:#567}
+@media print{.schc,#avmsg{display:none}}
+select.woS{font-size:11px;padding:2px 1px;border:1px solid var(--line);border-radius:5px;background:#fff;color:#678;width:78px}
+select.bmwo{width:auto}
+.abs{color:var(--bad);text-decoration:line-through}
+.gms{display:flex;flex-direction:column;gap:4px;align-items:center;padding:3px 0}.gm{display:flex;gap:3px;align-items:center}.gm .gl{font-size:10px;color:#9ab;width:20px;text-align:right;margin-right:3px}.gm.off .gl{opacity:.5}
+input.sc.g{width:38px}input.sc.offg{background:#f3f4f6;border-style:dashed}
+input.sc.wod{background:#f1f3f5}
+input.sc.bad{border-color:var(--bad);background:#fdeaea}
+table.st{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px}
+table.st th{background:#eef3f5;font-size:11px;text-transform:uppercase;padding:4px;text-align:center}
+table.st td{padding:4px;text-align:center;border-top:1px solid #edf1f3}
+table.st td:nth-child(2){text-align:left}
+table.st tr.q td{background:#e4f5ea;font-weight:600}
+table.st tr.pq td{background:#f1f8f3}
+.note{font-size:12px;color:#789;margin-top:6px}
+.bracket{display:grid;grid-template-columns:1fr 1fr 1fr;gap:26px;align-items:stretch;overflow-x:auto;min-width:760px}
+.col{display:flex;flex-direction:column;justify-content:space-around;gap:14px}
+.col h3{margin:0;text-align:center;font-size:12px;text-transform:uppercase;color:#789;letter-spacing:.7px}
+.bm{background:#fff;border:1px solid var(--line);border-left:4px solid var(--petrol);border-radius:8px;padding:6px 10px;position:relative}
+.bm .id{font-size:10px;color:#9ab;text-transform:uppercase}
+.bm .r{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 0;font-size:14px}
+.bm .r+.r{border-top:1px solid #edf1f3}
+.bm .kr{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 0;font-size:14px}.bm .kr .w{font-weight:700;color:#17703a}.bm .kr .ksc{font-size:13px;color:#456;white-space:nowrap}
+.bm .ph{color:#9ab;font-style:italic}
+.champ{margin-top:12px;text-align:center;background:linear-gradient(90deg,#fff3b0,#ffe27a);border:1px solid #e6c84d;border-radius:10px;padding:14px;font-size:20px;font-weight:700}
+.empty{text-align:center;padding:40px;color:#678}
+body.liveload main{visibility:hidden}
+#login{display:none}body.online #login{display:inline-block}
+body.viewer header .controls>*:not(#status):not(#print):not(#login){display:none!important}
+body.viewer #edit,body.viewer #metap,body.viewer #avp,body.viewer #pp,body.viewer #avmsg,body.viewer .schc{display:none!important}
+#avmsg:empty{display:none}#avmsg{margin:0 0 12px;padding:8px 12px;border-radius:8px;font-size:13px}#avmsg.avwarn{background:#fdeaea;color:#a02020;border:1px solid #f0b8b8}#avmsg.avok{background:#e4f5ea;color:#17703a;border:1px solid #b7e0c4}#avmsg .note{color:#a02020}
+#ftt{display:none}
+body.prev #ftt{display:block;background:#fff;max-width:760px;margin:12px auto;padding:10px;box-shadow:0 0 6px #0003}
+body.prev main{display:none}
+@media print{
+ @page{size:A4;margin:9mm}
+ header,main,.noprint{display:none!important}
+ body{background:#fff}
+ #ftt{display:block!important;box-shadow:none!important;margin:0!important;padding:0!important;max-width:none!important}
+ body.slips #ftt{display:none!important}
+ body.slips #slips{display:block!important;box-shadow:none!important;margin:0!important;padding:0!important;max-width:none!important}
+}
+/* ---------- score sheets (one slip per match) ---------- */
+#slips{display:none}
+body.slips #slips{display:block;max-width:820px;margin:12px auto;background:#fff;padding:12px;box-shadow:0 0 6px #0003}
+body.slips main,body.slips #ftt{display:none!important}
+#slips{font-family:Arial,Helvetica,sans-serif;color:#000;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+#slips .sbar{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-bottom:12px;font-size:13px}
+#slips .sg{display:grid;grid-template-columns:1fr 1fr;gap:5mm}
+#slips .sd{grid-column:1/-1;font-size:14px;font-weight:700;border-bottom:2px solid #000;padding-bottom:2px;margin:2mm 0 0}
+#slips .sd.pb{break-before:page;page-break-before:always}
+#slips .sl{border:1.5px dashed #555;padding:2mm 3mm;height:49mm;box-sizing:border-box;break-inside:avoid;page-break-inside:avoid;font-size:10pt;display:flex;flex-direction:column;gap:1.2mm;overflow:hidden}
+#slips .sl .sh{display:flex;justify-content:space-between;align-items:baseline;font-size:11pt}
+#slips .sl .sh span{font-size:9pt;color:#444}
+#slips .sl .si{font-size:9.5pt;color:#222}
+#slips table.s2{width:100%;border-collapse:collapse;table-layout:fixed}
+#slips table.s2 th{font-size:8.5pt;font-weight:700;border:1px solid #000;background:#e8e8e8;padding:1px 2px}#slips table.s2 th.nm{background:#fff;border-top-color:#fff;border-left-color:#fff}
+#slips table.s2 td{border:1px solid #000;height:10mm;padding:0 2px;text-align:center}
+#slips table.s2 td.nm{text-align:left;font-size:10pt;font-weight:700;width:40%;line-height:1.15}
+#slips table.s2 td.nm small{font-weight:400;color:#555}
+#slips table.s2 td.nm i{font-weight:400;color:#555}
+#slips table.s2 td.off,#slips table.s2 th.off{background:repeating-linear-gradient(45deg,#f1f1f1,#f1f1f1 3px,#fff 3px,#fff 6px)}
+#slips table.s2 td.tot{background:#f4f4f4;width:10%}
+#slips .sn{font-size:8pt;color:#555}
+#slips .sr{font-size:9.5pt;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+#slips .box{display:inline-block;width:3.3mm;height:3.3mm;border:1px solid #000;margin-right:1mm;vertical-align:middle}
+#slips .sw{border-bottom:1px solid #000;flex:1;min-width:30mm;height:5mm}
+#slips .sgn{display:grid;grid-template-columns:1fr 1fr;gap:6mm;margin-top:auto}
+#slips .sgn div{border-top:1px solid #000;font-size:8pt;text-align:center;padding-top:.5mm;height:7mm;display:flex;align-items:flex-end;justify-content:center}
+#slips .se{font-size:8.5pt;color:#333}
+
+#ftt,#ftt *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+#ftt{font-family:Arial,Helvetica,sans-serif;color:#000;font-size:11px}
+#ftt .fp{page-break-after:auto;break-after:auto}   /* no forced page breaks: the PDF flows continuously like the on-screen preview */
+#ftt .ff,#ftt .leg,#ftt .sdh,#ftt table.sct tr{break-inside:avoid;page-break-inside:avoid}#ftt .sdh{break-after:avoid;page-break-after:avoid}
+#ftt .fp.sched{break-before:page;page-break-before:always}#ftt .fp+.fp .pg:first-child,#ftt .fp .pg{margin-top:0}
+#ftt .fh{border-bottom:2.5px solid #000;padding-bottom:3px;margin-bottom:8px}
+#ftt .fh .t1{text-align:center;font-size:17px;font-weight:700;font-variant:small-caps;text-decoration:underline;line-height:1.2}
+#ftt .fh .t1 em{display:block;font-style:normal;text-decoration:underline}
+#ftt .fh .t1 .red{color:#e00000}
+#ftt .fh .meta{display:flex;gap:18px;font-size:11px;margin-top:6px;font-variant:small-caps}
+#ftt .fh .meta b{text-decoration:underline;font-weight:700}
+#ftt .ff{display:flex;gap:8px;align-items:flex-start}
+#ftt table.pl{border-collapse:collapse;width:300px;flex:none;border:2px solid #3b5f8f}
+#ftt table.pl td{padding:0 4px;height:25px;border-bottom:1px solid #444;font-size:11px}
+#ftt table.pl td.n{width:20px;text-align:right;font-weight:700;background:#fff;border:none;padding-right:5px}
+#ftt table.pl td.pn{width:22px;padding:0;text-align:center;color:#fff;font-weight:700;font-size:12px}
+#ftt table.pl td.pn span{writing-mode:vertical-rl;transform:rotate(180deg);display:inline-block;letter-spacing:.5px}
+#ftt table.pl td.lv{width:34px;text-align:center}
+#ftt table.pl td.pp b{font-weight:700}
+#ftt .gapr td{height:6px!important;border:none!important;background:#fff!important}
+#ftt .pA{background:#c3d3e9}#ftt .pB{background:#d3e0b3}#ftt .pC{background:#ff8b8b}#ftt .pD{background:#ffff9f}
+#ftt .pnA{background:#4f81bd}#ftt .pnB{background:#9bbb59}#ftt .pnC{background:#ff0000}#ftt .pnD{background:#ffff00;color:#000!important}
+#ftt .q{font-weight:700}
+#ftt .br{flex:1;min-width:0}
+#ftt .third{margin-top:14px;font-size:13px}
+#ftt .third h4{margin:0 0 4px;font-size:14px}
+#ftt .third table{border-collapse:collapse;font-size:12px}
+#ftt .third td{padding:2px 10px;border-bottom:1px solid #000}
+#ftt .pg{margin-bottom:10px}   /* a pool section may continue on the next page (continuous like the preview), but its small tables stay whole */
+#ftt .pg .fh,#ftt table.pp,#ftt table.cl,#ftt table.mm tr{break-inside:avoid;page-break-inside:avoid}#ftt .pg .fh{break-after:avoid;page-break-after:avoid}#ftt table.pp{break-after:avoid;page-break-after:avoid}#ftt .pg .fh{margin-bottom:4px}#ftt .pg .fh .t1{font-size:15px}
+#ftt table.pp{width:100%;border-collapse:collapse;border:2px solid #000;margin:4px 0 6px;font-size:11px}
+#ftt table.pp th{background:#c0c0c0;border:1px solid #000;padding:2px 4px;font-size:11px}
+#ftt table.pp td{padding:0 4px;line-height:14px;text-align:center;border-bottom:1px solid #666}
+#ftt table.pp td.pbig{font-size:30px;font-weight:700;border-right:2px solid #000;width:90px}
+#ftt .rc{font-weight:700;font-size:11.5px;margin:3px 0 0}
+#ftt table.mm{width:100%;border-collapse:collapse;font-size:11px}
+#ftt table.mm td{padding:0 4px;height:14px;line-height:14px}
+#ftt table.mm td.k{width:24px;text-align:center;font-weight:700}
+#ftt table.mm td.nm{width:19%}
+#ftt table.mm tr.rf:not(:first-child) td{border-top:1px solid #bbb}#ftt table.mm td.rn{width:64px;font-weight:700;white-space:nowrap}
+#ftt table.mm td.dt{width:88px;text-align:center;font-size:10.5px;white-space:nowrap}
+#ftt table.mm td.dash{width:18px;text-align:center}
+#ftt table.mm td.rs{width:112px;text-align:center;font-weight:700;color:#e00000;font-size:10.5px;white-space:nowrap}
+#ftt table.mm td.win.nm{background:#92d050}
+#ftt table.cl{width:100%;border-collapse:collapse;border:1.5px solid #000;font-size:11px;margin-top:6px}
+#ftt table.cl caption{border:1.5px solid #000;border-bottom:none;font-weight:700;font-size:12px;padding:2px}
+#ftt table.cl th{padding:2px 3px;font-size:10.5px;border-bottom:1px solid #000}
+#ftt table.cl td{padding:1px 3px;text-align:center;border-bottom:1px solid #444}
+#ftt table.cl td.pn2{text-align:center}
+#ftt table.cl tr.qq td{background:#92d050;font-weight:700}
+#ftt .leg{display:flex;justify-content:space-between;align-items:flex-end;margin-top:18px;margin-bottom:22px;font-size:11px}
+#ftt .sig{text-align:center;min-width:230px}#ftt .sig div:first-child{border-bottom:1px solid #000;font-weight:700;padding-bottom:2px;min-height:15px}
+#ftt .sch .sdh{font-size:13px}
+#ftt table.sct{font-size:11px}
+
+</style>
+</head>
+<body>
+<script>if(location.protocol.indexOf('http')===0)document.body.classList.add('liveload')</script>
+<header>
+  <h1>Ping Pong Tournament <small>4 pools of 5 · one match per pair · top 2 qualify · cross-over quarter-finals</small></h1>
+  <div class="controls">
+    <span id="status" class="status" title="Where your data is saved">...</span>
+    
+
+    <button class="primary" id="draw">🎲 Draw pools</button>
+    <button class="ghost" id="demo" title="Fill all results randomly (for testing)">Demo results</button>
+    <button class="ghost" id="clear">Clear scores</button>
+    <button class="ghost" id="backup" title="Download all data as a file">Backup</button>
+    <button class="ghost" id="restore" title="Load a backup file">Restore</button>
+    <input type="file" id="file" accept=".json" hidden>
+    <button class="ghost" id="prev" title="Preview the FTT-style sheets">Preview sheets</button>
+    <button class="ghost" id="slipbtn" title="Printable score sheets: one slip per match, for the players to write the scores">Score sheets</button>
+    <button class="ghost" id="print">Print / PDF</button>
+    <button class="primary" id="login" title="Log in with the organiser PIN to edit">Organiser login</button>
+  </div>
+</header>
+<main>
+  <details class="panel" id="edit">
+    <summary>Players by level (one line per level, 4 names per line, strongest line first)</summary>
+    <textarea id="txt" spellcheck="false"></textarea>
+    <div class="note">To add family names, write the full name and separate the players with commas, for example <code>Zied Marrakchi, Edam Fki, Baha Ben Ali, Ala Trabelsi</code>. If only family names are added (same first names, same order), the draw, scores and schedule stay as they are.</div>
+    <div style="margin-top:8px"><button class="primary" id="load">Save lists</button>
+      <button id="defaults">Restore defaults</button></div>
+    <div class="msg" id="msg"></div>
+  </details>
+  <details class="panel" id="metap">
+    <summary style="cursor:pointer;font-weight:600">Print sheets (FTT style): tournament details</summary>
+    <div class="schc" style="margin-top:8px">
+      <label>Tournament <input id="mt" style="width:220px"></label>
+      <label>Date <input id="md" style="width:150px"></label>
+      <label>Referee <input id="mr" style="width:160px"></label>
+    </div>
+  </details>
+  <details class="panel" id="avp">
+    <summary style="cursor:pointer;font-weight:600">Player availability: who cannot play on a day (used by the schedule)</summary>
+    <div class="schc" style="margin-top:8px">
+      <label>Mon 9 Nov <input id="un0" style="width:190px" placeholder="e.g. Zied, Baha Ben Ali"></label>
+      <label>Tue 10 Nov <input id="un1" style="width:190px" placeholder="names, comma separated"></label>
+      <label>Wed 11 Nov <input id="un2" style="width:190px"></label>
+      <label>Thu 12 Nov <input id="un3" style="width:190px"></label>
+      <label>Fri 13 Nov <input id="un4" style="width:190px"></label>
+    </div>
+    <div style="margin:8px 0"><button id="restoresched" title="Back to the draw and the schedule that were sent to the players on 6 Nov">Restore the default schedule</button> <span class="note">The default schedule is the PDF of 6 Nov. It stays until you change an availability field, then the schedule is recomputed.</span></div>
+    <div class="note">Type the names as in the player lists (first name, family name or full name), separated by commas. Pool matches of these players are always moved to days when they can play (a player who cannot play on two of the three pool days cannot be scheduled: he would have 4 matches in one day). A player never plays more than 2 matches a day; the round table is kept as far as possible (both matches of a round on the same day, rounds in order, level 1 vs level 2 last). Thursday and Friday matches can only be checked, because they depend on the results.</div>
+  </details>
+  <details class="panel" id="pp">
+    <summary style="cursor:pointer;font-weight:600">Pools: set the draw by hand (restore a draw that was already sent)</summary>
+    <textarea id="ptxt" spellcheck="false" style="width:100%;height:110px;margin-top:8px" placeholder="A: Zied, Bilel, Baha, Ala, Yengui&#10;B: ...&#10;C: ...&#10;D: ..."></textarea>
+    <div style="margin-top:8px"><button class="primary" id="pset">Set pools</button></div>
+    <div class="note">One line per pool (A to D), 5 players each: one player of every level. Use full names, first names or family names. The box shows the current pools.</div>
+    <div class="msg" id="pmsg"></div>
+  </details>
+  <div id="avmsg"></div>
+  <div id="app"></div>
+</main>
+<div id="ftt"></div>
+<div id="slips">
+  <div class="sbar noprint">
+    <b>Score sheets</b>
+    <label>Day <select id="sday"><option value="all">All days</option><option value="0">Mon 9 Nov</option><option value="1">Tue 10 Nov</option><option value="2">Wed 11 Nov</option><option value="3">Thu 12 Nov</option><option value="4">Fri 13 Nov</option></select></label>
+    <button class="primary" id="sprint">Print / PDF</button>
+    <span class="note" style="margin:0">One slip per match, 10 per page. Cut along the dotted lines.</span>
+  </div>
+  <div id="slipsbody"></div>
+</div>
+
+<script>
+const POOLS=['A','B','C','D'];
+/* A game ends at 21-x with x<=19, or with a 2-point lead y-x=2 when x>=21. Nothing else is a final score. */
+function validGame(a,b){
+  if(!Number.isInteger(a)||!Number.isInteger(b)||a<0||b<0)return false;
+  const hi=Math.max(a,b),lo=Math.min(a,b);
+  return (hi===21&&lo<=19)||(lo>=21&&hi-lo===2);
+}
+const DEFAULT_TEXT=`zied marrakchi, mohamed ouhibi, amine dagdoug, oussama louhichi
+bilel manai, mohamed frikha, youssef weslati, wadie ramma
+baha msallem, ahmed krayma, aymen aloui, edam fki
+seif gharbi, youssef hamza, marouen houati, ala ajili
+ines talbi, oussama yengui, iheb amri, ali njoumi`;
+/* Default draw and default schedule = the PDF sent to the players on 6 Nov 2026.
+   DEFAULT_POOLS: ids of the players of pools A-D (level order). DEFAULT_PIN: for Mon / Tue / Wed the matches in playing order, [pool 0-3, match 0-9] (match 2r = first, 2r+1 = second match of round r+1). */
+const DEFAULT_POOLS=[['0-0','1-0','2-0','3-3','4-1'],['0-2','1-3','2-2','3-2','4-2'],['0-1','1-1','2-1','3-1','4-0'],['0-3','1-2','2-3','3-0','4-3']];
+const DEFAULT_PIN=[[[0,0],[1,1],[2,0],[3,0],[0,1],[1,3],[2,1],[3,1],[0,2],[2,2],[3,2],[0,3],[2,3],[3,3],[3,6]],[[0,4],[1,0],[2,4],[3,4],[0,5],[1,4],[2,5],[3,5],[1,5],[2,9],[3,7],[1,6],[3,8],[1,7]],[[0,6],[1,2],[2,6],[0,7],[1,8],[2,7],[0,8],[2,8],[3,9],[1,9],[0,9]]];
+const KEY='ttPoolsV2';
+let storageMode='none';
+let S=null;
+function fresh(){return{text:DEFAULT_TEXT,bestOf:1,koBestOf:5,kdur:60,kv:5,pools:DEFAULT_POOLS.map(a=>a.slice()),pin:true,scores:{},ts:0,rv:3,unav:['','','','',''],dur:30,start:'11:30',sv:2,starts:['11:30','11:30','11:30','11:30','11:30'],tables:1,tv:2,times:{},meta:{name:'Ping Pong Tournament',dates:'9 - 13 Nov 2026',ref:'',lang:'en'}}}
+function norm(d){
+  if(!d||typeof d!=='object'||!d.text)return fresh();
+  try{migrateText(d)}catch(e){}   // old default list -> new names (not possible yet while the page is starting: see the call at the end)
+  d.scores=d.scores||{};
+  if(d.rv!==3){d.scores={};d.rv=3}   // scoring rules changed: old scores are cleared, draw kept
+  delete d.strict;delete d.target;
+  if(typeof d.pin!=='boolean')d.pin=!!d.pools&&JSON.stringify(d.pools)===JSON.stringify(DEFAULT_POOLS);   // the default schedule applies to the default draw
+  d.koBestOf=5;d.bestOf=1;d.kdur=Math.min(240,Math.max(10,Math.round(+d.kdur)||60));if(d.kv!==5){Object.keys(d.scores).forEach(k=>{if(k.charAt(0)!=='P')delete d.scores[k]});d.kv=5}   // knockouts are now best of 5 sets: old knockout scores are cleared
+  d.unav=[0,1,2,3,4].map(i=>typeof (d.unav||[])[i]==='string'?d.unav[i]:'');d.dur=Math.min(120,Math.max(5,Math.round(+d.dur)||30));d.start=/^\d\d:\d\d$/.test(d.start)?d.start:'09:00';d.starts=[0,1,2,3,4].map(i=>/^\d\d:\d\d$/.test((d.starts||[])[i])?d.starts[i]:d.start);
+  if(d.sv!==2){if(d.pin&&d.starts.every(x=>x==='11:00'))d.starts=d.starts.map(()=>'11:30');d.sv=2}   // the updated default schedule starts 30 minutes later (11:30), applied once to a saved schedule that still has the 11:00 default   // one start time per day (Mon-Fri)
+  if(d.tv!==2){d.tables=1;d.tv=2}   // one table by default (migrates the earlier default of 2)
+  d.tables=Math.min(8,Math.max(1,+d.tables||1));delete d.umps;d.times=d.times||{};d.meta=Object.assign({name:'Ping Pong Tournament',dates:'9 - 13 Nov 2026',ref:'',lang:'en'},d.meta||{});d.meta.lang='en';return d;
+}
+function idb(){return new Promise((res,rej)=>{
+  try{const r=indexedDB.open('ttPoolsDB',1);
+    r.onupgradeneeded=()=>r.result.createObjectStore('kv');
+    r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);
+  }catch(e){rej(e)}});}
+function idbSet(v){return idb().then(db=>new Promise((res,rej)=>{
+  const t=db.transaction('kv','readwrite');t.objectStore('kv').put(v,KEY);t.oncomplete=()=>res();t.onerror=()=>rej(t.error)}))}
+function idbGet(){return idb().then(db=>new Promise((res,rej)=>{
+  const q=db.transaction('kv').objectStore('kv').get(KEY);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)}))}
+function lsGet(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}}
+/* ---- live mode: when the page is served by server.py everybody sees the same data; the organiser (PIN) edits ---- */
+let ONLINE=false,ADMIN=false,TRYING=location.protocol.indexOf('http')===0,PINV=sessionStorage.getItem('ttpin')||'',SRV_V=-1,SRV_HAS=false,LOCALS=null,pushT=null;
+function setStatus(){
+  const el=document.getElementById('status');if(!el)return;
+  if(ONLINE){el.className='status ok';el.textContent=ADMIN?'LIVE - organiser (saved on server)':'LIVE - read-only view';return}
+  if(storageMode==='none'){el.className='status warn';el.textContent='Not saved - use Backup'}
+  else{el.className='status ok';el.textContent='Saved automatically'}
+}
+const save=()=>{
+  if(ONLINE){if(!ADMIN)return;S.ts=Date.now();pushSoon();return}
+  S.ts=Date.now();let ok=false;const data=JSON.stringify(S);
+  try{localStorage.setItem(KEY,data);ok=true}catch(e){}
+  idbSet(JSON.parse(data)).then(()=>{if(storageMode==='none'){storageMode='idb';setStatus()}}).catch(()=>{});
+  if(ok)storageMode='ls';
+  setStatus();
+};
+function pushSoon(){clearTimeout(pushT);pushT=setTimeout(pushNow,250)}
+async function pushNow(){
+  pushT=null;
+  try{
+    const r=await fetch('/api/state',{method:'POST',headers:{'Content-Type':'application/json','X-PIN':PINV},body:JSON.stringify(S),keepalive:true});
+    if(r.status===403){ADMIN=false;PINV='';sessionStorage.removeItem('ttpin');applyMode();render();alert('The PIN was not accepted - you are now in read-only mode.');return}
+    const j=await r.json();SRV_V=j.v;SRV_HAS=true;setStatus();
+  }catch(e){const el=document.getElementById('status');if(el){el.className='status warn';el.textContent='Server not reachable - NOT saved'}}
+}
+function applyMode(){
+  document.body.classList.toggle('online',ONLINE);
+  document.body.classList.toggle('viewer',ONLINE&&!ADMIN);
+  document.body.classList.toggle('prev',ONLINE&&!ADMIN);   // everybody except the organiser sees the printable sheets (live)
+  const pv=document.getElementById('prev');if(pv)pv.textContent=document.body.classList.contains('prev')?'Back to tournament':'Preview sheets';
+  const b=document.getElementById('login');if(b)b.textContent=ADMIN?'Log out (organiser)':'Organiser login';
+  setStatus();
+}
+function syncInputs(){const t=document.getElementById('txt');if(t)t.value=S.text;[['mt','name'],['md','dates'],['mr','ref']].forEach(([id,k])=>{const e=document.getElementById(id);if(e)e.value=S.meta[k]})}
+async function tryLogin(pin){
+  try{
+    const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin})});
+    const j=await r.json();if(!j.ok)return false;
+    PINV=pin;sessionStorage.setItem('ttpin',pin);ADMIN=true;
+    const seed=!SRV_HAS&&LOCALS&&LOCALS.ts;           // empty server: start from the data of this browser
+    if(seed){S=LOCALS;syncInputs()}
+    applyMode();render();
+    if(!SRV_HAS||MIGRATED){MIGRATED=false;await pushNow()}
+    return true;
+  }catch(e){return false}
+}
+async function pollLoop(){
+  try{
+    if(ONLINE&&!ADMIN){
+      const r=await fetch('/api/state?v='+SRV_V,{cache:'no-store'}),j=await r.json();
+      if(!j.unchanged){SRV_V=j.v;SRV_HAS=!!j.state;S=j.state?norm(j.state):fresh();syncInputs();render()}
+      setStatus();
+    }
+  }catch(e){const el=document.getElementById('status');if(el){el.className='status warn';el.textContent='Server not reachable - retrying...'}}
+  setTimeout(pollLoop,2000);
+}
+S=norm(lsGet());
+if(S.ts)storageMode='ls';
+if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
+
+/* ---------- data ---------- */
+/* One line per level, 4 players per line. Without family names the players are separated by spaces (as before).
+   With family names the players are separated by commas: "Zied Marrakchi, Edam Fki, Baha Ben Ali, Ala Trabelsi" (an underscore also works: Ben_Ali). */
+function parseText(t){return t.split('\n').map(l=>l.trim()).filter(Boolean).map(l=>/[,;]/.test(l)?l.split(/[,;]/).map(x=>x.trim()).filter(Boolean):l.split(/\s+/))}
+const nameParts=tok=>String(tok).split(/[\s_]+/).filter(Boolean);
+const dispName=tok=>nameParts(tok).map(w=>cap(w)).join(' ');
+function validLists(t){const L=parseText(t);return L.length===5&&L.every(r=>r.length===4)}
+function getPlayers(){const P={};parseText(S.text).forEach((r,ti)=>r.forEach((n,i)=>{{const w=nameParts(n);P[ti+'-'+i]={id:ti+'-'+i,name:dispName(n),first:cap(w[0]||''),family:w.slice(1).map(x=>cap(x)).join(' '),tier:ti+1}}}));return P}
+let P=getPlayers();
+const isPool=mid=>mid.charAt(0)==='P';           // pool matches: always ONE game per pair
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+
+function draw(){
+  if(!validLists(S.text))return;
+  const pools=[[],[],[],[]];
+  for(let t=0;t<5;t++){
+    const ids=shuffle([0,1,2,3].map(i=>t+'-'+i));
+    ids.forEach((id,p)=>pools[p].push(id));
+  }
+  S.pools=shuffle(pools); S.pin=false; S.scores={}; S.times={}; save(); render();
+}
+
+/* Pool programme: 10 matches per pool over 3 days (Mon-Wed), balanced to 14 / 13 / 13 matches per day over the 4 pools.
+   Pairs are positions in the pool (0 = level 1 ... 4 = level 5). Within a day no player plays two matches in a row. */
+/* Pool programme: every pool has 5 ROUNDS of 2 MATCHES (a match = 2 sets, a third set if 1-1); in each round one player rests.
+   Positions in the pool: 0 = level 1 ... 4 = level 5. Round 1 has 1 vs 5 and round 5 ends with 1 vs 2 (the two strongest players).
+   Rounds are played in order; they are spread over Mon-Wed (see DEFSPLIT). */
+const DAYS=['Monday 9 Nov','Tuesday 10 Nov','Wednesday 11 Nov'];
+const RBASE=[[[0,4],[2,3]],[[1,4],[0,3]],[[1,3],[0,2]],[[1,2],[3,4]],[[2,4],[0,1]]];   // r1: 1-5 3-4 | r2: 2-5 1-4 | r3: 2-4 1-3 | r4: 2-3 4-5 | r5: 3-5 then 1-2 (last)  -> rests: 2, 3, 5, 1, 4
+const DEFSPLIT=[[2,2,1],[2,1,2],[1,2,2],[2,2,1]];   // rounds on Mon / Tue / Wed for pools A, B, C, D  -> 14 / 14 / 12 matches per day
+// keep the original orientation (who is "left") of every pair, so stored scores stay valid
+const ORIENT={};
+(()=>{let a=[0,1,2,3,4,-1];for(let r=0;r<5;r++){for(let i=0;i<3;i++){const x=a[i],y=a[5-i];if(x>=0&&y>=0){ORIENT[x+'-'+y]=[x,y];ORIENT[y+'-'+x]=[x,y]}}a=[a[0],a[5],a[1],a[2],a[3],a[4]]}})();
+const MATCHES=[];   // the 10 matches of a pool in round order: r = round (0-4), sub = first / second match of the round
+RBASE.forEach((rd,r)=>rd.forEach(([i,j],sub)=>MATCHES.push({r,sub,px:ORIENT[i+'-'+j][0],py:ORIENT[i+'-'+j][1]})));
+function defaultDays(p){const out=[];DEFSPLIT[p].forEach((n,d)=>{for(let k=0;k<n*2;k++)out.push(d)});return out}   // day of every match in the default plan
+function buildFromDays(ids,a){
+  return [0,1,2].map(d=>{const items=[];MATCHES.forEach((m,i)=>{if(a[i]===d)items.push({r:m.r,sub:m.sub,x:ids[m.px],y:ids[m.py]})});return{items,m:items.map(it=>[it.x,it.y])}});
+}
+
+/* ---------- player availability ----------
+   S.unav[d] = names of players who cannot play on day d (0 Mon .. 4 Fri). Pool matches are moved to other days when possible. */
+const DAYSHORT=['Mon 9 Nov','Tue 10 Nov','Wed 11 Nov','Thu 12 Nov','Fri 13 Nov'];
+function unavMatch(d){   // names are separated by commas (or spaces); a full name, a first name or a family name is accepted
+  const ids=new Set(),unknown=[],ambig=[],txt=String((S.unav&&S.unav[d])||'').trim();
+  if(!txt)return{ids,unknown,ambig};
+  const pls=Object.values(P),L=x=>String(x).toLowerCase();
+  const find=w=>{const full=pls.filter(pl=>L(pl.name)===w);return full.length?full:pls.filter(pl=>L(pl.first)===w||(pl.family&&L(pl.family)===w))};
+  txt.split(/[,;\n]+/).map(x=>L(x).replace(/_/g,' ').replace(/\s+/g,' ').trim()).filter(Boolean).forEach(ch=>{
+    const m=find(ch);
+    if(m.length){if(m.length>1)ambig.push(ch);m.forEach(pl=>ids.add(pl.id));return}
+    ch.split(' ').forEach(w=>{const m2=find(w);if(!m2.length){unknown.push(w);return}if(m2.length>1)ambig.push(w);m2.forEach(pl=>ids.add(pl.id))});
+  });
+  return{ids,unknown,ambig};
+}
+const unavIds=d=>unavMatch(d).ids;
+const unavUnknown=d=>unavMatch(d).unknown;
+const unavAmbig=d=>unavMatch(d).ambig;
+let PLANALL={key:'',res:null};
+/* One plan for all 4 pools together. Every MATCH of a pool gets its own day (Mon / Tue / Wed). In order of importance:
+   1) nobody plays on a day when he is unavailable (the availability field is always respected when it is possible)
+   2) nobody plays more than 2 matches a day
+   3) the round table stays as it is: both matches of a round on the same day, rounds in order, level 1 vs level 2 last on Wednesday
+   4) the 3 days stay balanced over the 4 pools, and the plan stays close to the default one */
+function planAll(){
+  const un=[0,1,2].map(d=>unavIds(d));
+  const key=JSON.stringify([S.pools,S.pin,un.map(u=>[...u].sort())]);
+  if(PLANALL.key===key)return PLANALL.res;
+  if(S.pin){   // the default schedule (PDF of 6 Nov): days and order are fixed
+    const res=S.pools.map((ids,p)=>[0,1,2].map(d=>{const items=DEFAULT_PIN[d].filter(q=>q[0]===p).map(([,i])=>({r:MATCHES[i].r,sub:MATCHES[i].sub,x:ids[MATCHES[i].px],y:ids[MATCHES[i].py]}));return{items,m:items.map(it=>[it.x,it.y])}}));
+    PLANALL={key,res};return res;
+  }
+  const N=MATCHES.length,tot=Math.pow(3,N);
+  const cands=S.pools.map((ids,p)=>{
+    const def=defaultDays(p),best=new Map(),a=new Array(N).fill(0);
+    const blocked=MATCHES.map(m=>[0,1,2].map(d=>un[d].has(ids[m.px])||un[d].has(ids[m.py])));
+    for(let c=0;c<tot;c++){
+      let v=c;for(let i=0;i<N;i++){a[i]=v%3;v=(v-a[i])/3}
+      let pen=0;const n=[0,0,0],cd=[[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]];
+      for(let i=0;i<N;i++){const d=a[i],m=MATCHES[i];if(blocked[i][d])pen+=1000000;n[d]++;cd[m.px][d]++;cd[m.py][d]++;if(d!==def[i])pen+=2}
+      for(let q=0;q<5;q++)for(let d=0;d<3;d++)if(cd[q][d]>2)pen+=100000*(cd[q][d]-2);
+      for(let r=0;r<5;r++)if(a[2*r]!==a[2*r+1])pen+=30;
+      for(let i=0;i<N;i++)for(let j=i+1;j<N;j++)if(a[i]>a[j])pen+=25;
+      if(a[N-1]!==2)pen+=40;
+      const k=n.join(),o=best.get(k);
+      if(!o||pen<o.c)best.set(k,{n:n.slice(),c:pen,a:a.slice()});
+    }
+    return [...best.values()];
+  });
+  let st=new Map([['0,0,0',{c:0,path:[]}]]);
+  cands.forEach(cl=>{
+    const nx=new Map();
+    st.forEach((v,k)=>{const t=k.split(',').map(Number);cl.forEach(cd=>{
+      const nk=t.map((x,d)=>x+cd.n[d]).join(','),c=v.c+cd.c,o=nx.get(nk);
+      if(!o||c<o.c)nx.set(nk,{c,path:[...v.path,cd]});
+    })});
+    st=nx;
+  });
+  let best=null;
+  st.forEach((v,k)=>{const t=k.split(',').map(Number),c=v.c+20*(Math.max(...t)-Math.min(...t));if(!best||c<best.c)best={c,path:v.path}});
+  const res=best.path.map((cd,p)=>buildFromDays(S.pools[p],cd.a));
+  PLANALL={key,res};
+  return res;
+}
+function schedule(ids,p){return planAll()[p||0]}
+
+/* ---------- results ---------- */
+function getScore(mid,k){const s=S.scores[mid];return(s&&s.k===k)?s:{a:'',b:''}}
+/* Pool rounds: two matches between a pair of players; a third match only if they are 1-1. Stored as s.g = [match1, match2, match3] */
+const emptyG=(n=3)=>Array.from({length:n},()=>({a:'',b:''}));
+const nSets=mid=>isPool(mid)?3:5;     // pool round: 2 sets (+1 if 1-1); knockout match: best of 5 sets, first to 3
+function poolS(mid,k){
+  const n=nSets(mid),s=S.scores[mid];
+  if(!s||s.k!==k)return{k,g:emptyG(n)};
+  if(!s.g){s.g=emptyG(n);s.g[0]={a:s.a===undefined?'':s.a,b:s.b===undefined?'':s.b};delete s.a;delete s.b}   // older single score = set 1
+  while(s.g.length<n)s.g.push({a:'',b:''});
+  return s;
+}
+function gameRes(g){
+  if(g.a===''&&g.b==='')return null;
+  if(g.a===''||g.b==='')return{pending:true};
+  const a=+g.a,b=+g.b;
+  return validGame(a,b)?{a,b,w:a>b?0:1}:{invalid:true};
+}
+function thirdNeeded(gs){return !!(gs[0]&&gs[1]&&gs[0].w!==undefined&&gs[1].w!==undefined&&gs[0].w!==gs[1].w)}
+function roundRes(mid,k){
+  const s=poolS(mid,k);
+  if(s.wo==='a'||s.wo==='b'){const w=s.wo==='a'?1:0;return{a:w===0?2:0,b:w===0?0:2,w,wo:true,pa:0,pb:0,txt:'WO'}}
+  const gs=s.g.map(gameRes);
+  if(gs.every(g=>g===null))return null;
+  const use=thirdNeeded(gs)?[0,1,2]:[0,1];
+  if(use.some(i=>gs[i]&&gs[i].invalid))return{invalid:true};
+  if(!(gs[0]&&gs[1]&&gs[0].w!==undefined&&gs[1].w!==undefined))return{pending:true};
+  let w,pl;
+  if(gs[0].w===gs[1].w){w=gs[0].w;pl=[gs[0],gs[1]]}
+  else{if(!(gs[2]&&gs[2].w!==undefined))return{pending:true};w=gs[2].w;pl=[gs[0],gs[1],gs[2]]}
+  let ga=0,gb=0,pa=0,pb=0;
+  pl.forEach(g=>{pa+=g.a;pb+=g.b;g.w===0?ga++:gb++});
+  return{a:ga,b:gb,w,pa,pb,txt:pl.map(g=>g.a+'-'+g.b).join('  ')};
+}
+/* Knockout match: best of 5 sets, the winner is the first to win 3 sets (3-0, 3-1, 3-2). Every set follows the same score rule as the pool sets. */
+function koRes(mid,k){
+  const s=poolS(mid,k);
+  if(s.wo==='a'||s.wo==='b'){const w=s.wo==='a'?1:0;return{a:w===0?3:0,b:w===0?0:3,w,wo:true,pa:0,pb:0,txt:'WO'}}   // absent player loses
+  const gs=s.g.map(gameRes);
+  if(gs.every(g=>g===null))return null;
+  let a=0,b=0,pa=0,pb=0;const used=[];
+  for(let i=0;i<gs.length;i++){
+    if(a===3||b===3)break;
+    const g=gs[i];
+    if(g&&g.invalid)return{invalid:true};
+    if(!g||g.w===undefined)return{pending:true};
+    used.push(g);g.w===0?a++:b++;pa+=g.a;pb+=g.b;
+  }
+  if(a<3&&b<3)return{pending:true};
+  return{a,b,w:a===3?0:1,pa,pb,txt:used.map(g=>g.a+'-'+g.b).join('  ')};
+}
+function result(mid,k){
+  return isPool(mid)?roundRes(mid,k):koRes(mid,k);
+}
+
+function standings(p){
+  const ids=S.pools[p],st={},ms=[];
+  ids.forEach(id=>st[id]={id,pts:0,w:0,l:0,sw:0,sl:0,gw:0,gl:0,pw:0,pp:0,sa:0});
+  schedule(ids,p).forEach(rd=>rd.m.forEach(([x,y])=>{
+    const r=result(`P${p}_${x}_${y}`,x+'|'+y);
+    if(!r||r.invalid||r.pending)return;
+    const win=r.w===0?x:y,lose=r.w===0?y:x;
+    st[win].w++;st[lose].l++;
+    st[win].pts+=2;st[lose].pts+=r.wo?0:1;
+    if(!r.wo){st[x].pw+=r.a;st[y].pw+=r.b;st[x].pp+=r.a+r.b;st[y].pp+=r.a+r.b}   // sets actually played (walkovers excluded) for SA   // win 2 pts, loss 1 pt, absent player 0 pt
+    st[x].sw+=r.pa;st[x].sl+=r.pb;st[y].sw+=r.pb;st[y].sl+=r.pa;
+    st[x].gw+=r.a;st[x].gl+=r.b;st[y].gw+=r.b;st[y].gl+=r.a;
+    ms.push({x,y,win,sx:r.pa,sy:r.pb,wo:!!r.wo});
+  }));
+  // 1) points (win 2, loss 1, absent 0)  2) highest SA = sets won / sets played x 100  3) head-to-head result between the tied players  4) higher (points marked - points received)  5) level
+  function h2h(g){
+    if(g.length<2)return g;
+    const set=new Set(g.map(s=>s.id));
+    g.forEach(s=>{s.mw=0});
+    ms.filter(m=>set.has(m.x)&&set.has(m.y)).forEach(m=>{st[m.win].mw++});
+    const by={};g.forEach(s=>(by[s.mw]=by[s.mw]||[]).push(s));
+    const keys=Object.keys(by).map(Number).sort((a,b)=>b-a);
+    if(keys.length>1)return keys.flatMap(k=>h2h(by[k]));
+    return g.slice().sort((a,b)=>(b.sw-b.sl)-(a.sw-a.sl)||P[a.id].tier-P[b.id].tier);   // still equal (e.g. circular): higher (marked - received), then player level
+  }
+  function rank(g){
+    g.forEach(s=>{s.sa=s.pp?s.pw/s.pp*100:0});
+    const by={};g.forEach(s=>(by[s.sa]=by[s.sa]||[]).push(s));
+    return Object.keys(by).map(Number).sort((a,b)=>b-a).flatMap(k=>h2h(by[k]));
+  }
+  const groups={};Object.values(st).forEach(s=>(groups[s.pts]=groups[s.pts]||[]).push(s));
+  const out=Object.keys(groups).map(Number).sort((a,b)=>b-a).flatMap(pt=>rank(groups[pt]));
+  out.forEach(s=>{s.sa=s.pp?s.pw/s.pp*100:0});
+  return{rows:out,done:ms.length===10};
+}
+
+/* ---------- bracket ---------- */
+const QF=[['A1','B2'],['C1','D2'],['B1','A2'],['D1','C2']];
+let ST=[];
+function slotRef(code){
+  const p=POOLS.indexOf(code[0]),r=+code[1]-1;
+  const label=(r+1)+(r===0?'st':'nd')+' · Pool '+code[0];
+  if(!ST[p]||!ST[p].done)return{id:null,label};
+  return{id:ST[p].rows[r].id,label};
+}
+function bmatch(mid,x,y){
+  const k=(x.id||'?')+'|'+(y.id||'?');
+  const ready=x.id&&y.id;
+  const r=ready?result(mid,k):null;
+  const m={mid,x,y,k,ready,r};
+  if(r&&r.w!==undefined){m.win=r.w===0?x:y;m.lose=r.w===0?y:x}
+  return m;
+}
+const wref=(m,lbl)=>m&&m.win?m.win:{id:null,label:lbl};
+const lref=(m,lbl)=>m&&m.lose?m.lose:{id:null,label:lbl};
+function buildBracket(){
+  const q=QF.map((c,i)=>bmatch('QF'+(i+1),slotRef(c[0]),slotRef(c[1])));
+  const s1=bmatch('SF1',wref(q[0],'Winner QF1'),wref(q[1],'Winner QF2'));
+  const s2=bmatch('SF2',wref(q[2],'Winner QF3'),wref(q[3],'Winner QF4'));
+  const f=bmatch('F',wref(s1,'Winner SF1'),wref(s2,'Winner SF2'));
+  const t=bmatch('3RD',lref(s1,'Loser SF1'),lref(s2,'Loser SF2'));
+  return{q,s1,s2,f,t};
+}
+
+/* ---------- match schedule (15 min per match) ---------- */
+const durM=()=>S.dur||30;
+const kdurM=()=>S.kdur||60;      // knockout match length (best of 5 sets)
+const toMin=t=>{const [h,m]=t.split(':').map(Number);return h*60+m};
+const fmtT=m=>String(Math.floor(m/60)%24).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
+function packOrdered(items,T){   // keep the playing order; T matches per time slot, nobody twice in a slot
+  const slots=[];let cur=[];
+  items.forEach(it=>{
+    const used=new Set(cur.flatMap(c=>[c.x.id,c.y.id]));
+    if(cur.length>=T||used.has(it.x.id)||used.has(it.y.id)){slots.push(cur);cur=[]}
+    cur.push(it);
+  });
+  if(cur.length)slots.push(cur);
+  return slots;
+}
+function packSlots(items,T,prev0){
+  // fill slots of T tables; no player twice in a slot, and (if possible) no player in two consecutive slots
+  let best=null,seed=12345;
+  const rnd=()=>{seed=(seed*1103515245+12345)&0x7fffffff;return seed/0x7fffffff};
+  for(let attempt=0;attempt<80;attempt++){
+    let rem=items.slice(),slots=[],prev=new Set(prev0||[]);
+    while(rem.length){
+      const cnt={};rem.forEach(it=>it.pl.forEach(x=>cnt[x]=(cnt[x]||0)+1));
+      const sc=it=>it.pl.reduce((a,x)=>a+cnt[x],0)+(attempt?rnd()*2.5:0);
+      const cand=rem.map(it=>[sc(it),it]).sort((a,b)=>b[0]-a[0]).map(a=>a[1]);
+      const cur=[],used=new Set();
+      for(const it of cand){if(cur.length>=T)break;if(it.pl.some(x=>used.has(x)||prev.has(x)))continue;cur.push(it);it.pl.forEach(x=>used.add(x))}
+      if(!cur.length){for(const it of cand){if(it.pl.some(x=>used.has(x)))continue;cur.push(it);it.pl.forEach(x=>used.add(x));break}}
+      slots.push(cur);rem=rem.filter(it=>!cur.includes(it));prev=used;
+    }
+    if(!best||slots.length<best.length)best=slots;
+  }
+  return best;
+}
+function chunk(a,T){const o=[];for(let i=0;i<a.length;i+=T)o.push(a.slice(i,i+T));return o}
+let PLAN={days:[],map:{}};
+const KOTAG=m=>m.mid==='F'?'Final':m.mid==='3RD'?'3rd place':m.mid.startsWith('QF')?'Quarter-final '+m.mid.slice(2):'Semi-final '+m.mid.slice(2);
+const DAYISO=['2026-11-09','2026-11-10','2026-11-11','2026-11-12','2026-11-13'];
+const fmtDate=(iso,lg)=>{const d=new Date(iso+'T12:00:00');return d.toLocaleDateString(lg==='fr'?'fr-FR':'en-GB',{weekday:'short',day:'numeric',month:'short'})};
+const ovOf=it=>{const o=S.times[it.mid];return o?(o.length>5?o:it.date+'T'+o):null};   // stored as YYYY-MM-DDTHH:MM (old HH:MM values still work)
+const timeOf=it=>{const o=ovOf(it);return o?o.slice(11,16):it.time};
+const dateOf=it=>{const o=ovOf(it);return o?o.slice(0,10):it.date};
+function timeInput(it){
+  const c=S.times[it.mid]?' cus':'';
+  return `<input type="datetime-local" class="tmI${c}" data-tm="1" data-mid="${it.mid}" value="${dateOf(it)}T${timeOf(it)}" title="Date and start time of this match (planned ${fmtDate(it.date)} ${it.time}). Change it if needed; clear it to go back to the plan">`;
+}
+/* Plan: day, time slot and table for every match. */
+function computePlan(b){
+  const T=S.tables,map={},days=[];
+  const fin=(di,label,slots)=>{slots.forEach((sl,si)=>sl.forEach((it,ti)=>{it.date=DAYISO[di];it.slot=si;it.table=ti+1;it.time=fmtT(toMin(S.starts[di])+si*(di>=3?kdurM():durM()));map[it.mid]=it}));days.push({label,slots})};
+  DAYS.forEach((label,d)=>{
+    // order: round after round; inside a round the first matches of all pools, then the second matches (nobody plays twice in a row when possible)
+    const per=S.pools.map((pids,p)=>schedule(pids,p)[d].items);
+    const items=[],maxK=Math.max(0,...per.map(r=>r.length));
+    for(let k=0;k<maxK;k++)per.forEach((its,p)=>{
+      const it=its[k];if(!it)return;
+      items.push({pl:[it.x,it.y],tag:'Pool '+POOLS[p]+' · Round '+(it.r+1),round:it.r+1,mnum:it.r*2+it.sub+1,x:{id:it.x},y:{id:it.y},mid:`P${p}_${it.x}_${it.y}`,k:it.x+'|'+it.y});
+    });
+    let slots;
+    if(S.pin){   // the default schedule keeps its exact playing order
+      slots=packOrdered(DEFAULT_PIN[d].map(([p,i])=>{const m=MATCHES[i],ids=S.pools[p],x=ids[m.px],y=ids[m.py];
+        return{pl:[x,y],tag:'Pool '+POOLS[p]+' · Round '+(m.r+1),round:m.r+1,mnum:i+1,x:{id:x},y:{id:y},mid:`P${p}_${x}_${y}`,k:x+'|'+y}}),T);
+    }else if(d===DAYS.length-1){   // last pool day: the level 1 vs level 2 match (end of round 5) of every pool is played last
+      const closers=items.filter(it=>it.round===5&&P[it.x.id].tier+P[it.y.id].tier===3),main=items.filter(it=>!closers.includes(it));
+      slots=[...packOrdered(main,T),...packOrdered(closers,T)];
+    }else slots=packOrdered(items,T);
+    fin(d,label,slots);
+  });
+  if(b){
+    const ko=(ms)=>ms.map(m=>({tag:KOTAG(m),x:m.x,y:m.y,mid:m.mid,k:m.k,m}));
+    const thu=[...chunk(ko(b.q),T),...chunk(ko([b.s1,b.s2]),T)];
+    fin(3,'Thursday 12 Nov',thu);
+    const fri=[...chunk(ko([b.t]),T),...chunk(ko([b.f]),T)];
+    fin(4,'Friday 13 Nov',fri);
+  }
+  return{days,map};
+}
+function renderSchedule(b,ctl=true){
+  const T=S.tables;
+  const days=PLAN.days;
+  let h=`<div class="panel sch">${ctl?`<div class="schc">
+    <span><b>Start time</b> ${['Mon','Tue','Wed','Thu','Fri'].map((d,i)=>`<label style="margin-left:8px">${d} <input type="time" id="st${i}" value="${esc(S.starts[i])}"></label>`).join('')}</span>
+    <label>Pool match duration <input type="number" id="dur" min="5" max="120" step="5" value="${durM()}" style="width:64px"> min</label>
+    <label>Knockout match duration <input type="number" id="kdur" min="10" max="240" step="5" value="${kdurM()}" style="width:64px"> min</label>
+    <label>Tables <select id="tbl">${[1,2,3,4,5,6,7,8].map(n=>`<option value="${n}"${n===T?' selected':''}>${n}</option>`).join('')}</select></label>
+    <span class="note" style="margin:0">One match = 2 sets between two players (a third set only if they are 1-1). One round = 2 matches, one player rests; a player plays at most 2 matches a day; the rounds of a pool are played in order, round 1 has level 1 vs level 5 and level 1 vs level 2 is the last match of the pool. Players who are unavailable on a day (see Player availability) are not scheduled that day when possible.  Knockout: best of 5 sets, the first to win 3 sets wins the match (3-0, 3-1, 3-2); one match takes the knockout duration. Bracket names appear once the pools are complete.</span></div>`:''}`;
+  days.forEach((d,di)=>{
+    const n=d.slots.reduce((a,s)=>a+s.length,0);
+    h+=`<div class="sdh">${di<3?'Day '+(di+1)+' &middot; ':''}${d.label}<small>${n} matches &middot; ${fmtT(toMin(S.starts[di]))} - ${fmtT(toMin(S.starts[di])+d.slots.length*(di>=3?kdurM():durM()))}</small></div><table class="sct">`;
+    d.slots.forEach((sl,si)=>sl.forEach((it,ti)=>{
+      const r=it.m?it.m.r:result(it.mid,it.k),rtxt=r&&r.w!==undefined?(r.wo?'WO':`${r.a} - ${r.b}`):'';
+      const wx=r&&r.w===0?' w':'',wy=r&&r.w===1?' w':'';
+      h+=`<tr><td class="t${S.times[it.mid]?' cus':''}">${(ti===0||S.times[it.mid])?timeOf(it):''}${S.times[it.mid]&&dateOf(it)!==it.date?'<br><small>'+fmtDate(dateOf(it))+'</small>':''}</td><td class="tb">Table ${ti+1}</td><td class="tg">${esc(it.tag)}</td><td class="l${wx}">${nm(it.x)}</td><td class="vs">vs</td><td class="${wy}">${nm(it.y)}</td><td class="rs">${rtxt}</td></tr>`;
+    }));
+    h+=`</table>`;
+  });
+  return h+`</div>`;
+}
+
+/* ---------- FTT-style printable sheets ---------- */
+const FT={
+ en:{title:'Final Draw',tour:'Tournament',date:'Date',ref:'Referee',pool:'Pool',phase:'Group stage',pn:'No.',player:'Player',lvl:'Level',day:'Day',
+     days:['Monday 9 Nov','Tuesday 10 Nov','Wednesday 11 Nov'],stand:'Final Standings Pool',rk:'',Pts:'Pts',G:'W',Pp:'L',Mt:'Sets',SA:'SA %',PM:'PF',PE:'PA',Df:'+/-',
+     qf:'Quarter-finals',sf:'Semi-finals',fin:'Final',third:'3rd / 4th Place',sign:'Signature - Referee',
+     leg:'Pts: win 2, loss 1, absent 0 · Knockout: best of 5 sets, first to 3 sets · W: Matches won · L: Matches lost · Sets: sets won-lost · SA: sets won / sets played x 100 · PF: Points for · PA: Points against · WO: Walkover (present player wins, absent player 0 pt)',sched:'Match schedule',tableau:'',pf:'Group Stage',match:'Match',round:'Round'}
+};
+const up=t=>String(t);   // names are shown as written: only the first letter of each word is a capital
+function fHead(L,l1,l2,l3,noMeta){
+  const m=S.meta;
+  return `<div class="fh"><div class="t1">${l1}${l2?`<em>${l2}</em>`:''}${l3?`<em class="red">${l3}</em>`:''}</div>
+  ${noMeta?'':`<div class="meta"><span><b>${L.tour}:</b> ${esc(m.name)}</span><span><b>${L.date}:</b> ${esc(m.dates)}</span><span><b>${L.ref}:</b> ${esc(m.ref)}</span></div>`}</div>`;
+}
+function resTxt(r){return r&&r.w!==undefined?(r.wo?'WO':`${r.a} - ${r.b}`):''}
+function wTxt(r){return r&&r.w!==undefined?(r.wo?'WO':(r.w===0?`${r.a} - ${r.b}`:`${r.b} - ${r.a}`)):''}   // winner first
+function bracketSvg(b,L){
+  const W=430,x=[0,112,224,336,430],ys=[...Array(8)].map((_,i)=>46+i*66);
+  const ent=[b.q[0].x,b.q[0].y,b.q[1].x,b.q[1].y,b.q[2].x,b.q[2].y,b.q[3].x,b.q[3].y];
+  const codes=QF.flat();
+  const nmT=(ref,fb)=>ref&&ref.id?up(P[ref.id].name):(fb||'');
+  let o=`<svg viewBox="0 0 ${W} 580" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="Arial,Helvetica,sans-serif">`;
+  const line=(a,b2,c,d)=>o+=`<line x1="${a}" y1="${b2}" x2="${c}" y2="${d}" stroke="#000" stroke-width="1.4"/>`;
+  const txt=(tx,ty,t,sz,bold,mw)=>{const fs=mw?Math.min(sz,Math.floor(mw/(Math.max(1,String(t).length)*(bold?.6:.55))*10)/10):sz;o+=`<text x="${tx}" y="${ty}" font-size="${fs}" ${bold?'font-weight="700"':''}>${esc(t)}</text>`};
+  txt(x[0]+2,14,L.qf,10,true);txt(x[1]+4,14,L.sf,10,true);txt(x[2]+4,14,L.fin,10,true);
+  ent.forEach((r,i)=>{txt(x[0]+3,ys[i]-5,nmT(r,codes[i]),13,true,x[1]-x[0]-8);line(x[0],ys[i],x[1],ys[i])});
+  const qy=[0,1,2,3].map(j=>(ys[2*j]+ys[2*j+1])/2);
+  [0,1,2,3].forEach(j=>{line(x[1],ys[2*j],x[1],ys[2*j+1]);line(x[1],qy[j],x[2],qy[j]);
+    const m=b.q[j];txt(x[1]+4,qy[j]-5,nmT(m.win),13,true,x[2]-x[1]-8);txt(x[1]+4,qy[j]+13,wTxt(m.r),11)});
+  const sy=[0,1].map(k=>(qy[2*k]+qy[2*k+1])/2),ss=[b.s1,b.s2];
+  [0,1].forEach(k=>{line(x[2],qy[2*k],x[2],qy[2*k+1]);line(x[2],sy[k],x[3],sy[k]);
+    txt(x[2]+4,sy[k]-5,nmT(ss[k].win),13,true,x[3]-x[2]-8);txt(x[2]+4,sy[k]+13,wTxt(ss[k].r),11)});
+  const fy=(sy[0]+sy[1])/2;line(x[3],sy[0],x[3],sy[1]);line(x[3],fy,x[4],fy);
+  txt(x[3]+4,fy-5,nmT(b.f.win),14,true,x[4]-x[3]-8);txt(x[3]+4,fy+13,wTxt(b.f.r),11);
+  return o+'</svg>';
+}
+function renderFTT(b){
+  const L=FT.en;
+  const plRow=(id,n,p,first)=>{const q=ST[p]&&ST[p].done&&ST[p].rows.slice(0,2).some(r=>r.id===id);
+    return `<tr class="p${POOLS[p]}"><td class="n">${n}</td>${first?`<td class="pn pn${POOLS[p]}" rowspan="5"><span>${L.pool} ${POOLS[p]}</span></td>`:''}<td class="lv">L${P[id].tier}</td><td class="pp${q?' q':''}">${esc(up(P[id].name))}${q?' &#10003;':''}</td></tr>`};
+  // page 1
+  let left='<table class="pl">',n=0;
+  S.pools.forEach((ids,p)=>{const sorted=ids.slice().sort((a,c)=>P[a].tier-P[c].tier);
+    sorted.forEach((id,i)=>{n++;left+=plRow(id,n,p,i===0)});
+    if(p<3)left+='<tr class="gapr"><td colspan="4"></td></tr>'});
+  left+='</table>';
+  const t3=b.t,f=b.f;
+  let pg=`<div class="fp">${fHead(L,L.title)}<div class="ff">${left}<div class="br">${bracketSvg(b,L)}
+    <div class="third"><h4>${L.third}</h4><table><tr><td>${nm(t3.x)}</td><td>${nm(t3.y)}</td><td><b>${t3.win?esc(P[t3.win.id].name):''}</b> ${wTxt(t3.r)}</td></tr></table></div></div></div>
+    <div class="leg"><div>${L.leg}</div><div class="sig"><div>${esc(S.meta.ref)}</div><div>${L.sign}</div></div></div></div>`;
+  // pool pages: 2 pools per page
+  const poolBlock=(p,second)=>{
+    const ids=S.pools[p],sorted=ids.slice().sort((a,c)=>P[a].tier-P[c].tier),no={};sorted.forEach((id,i)=>no[id]=i+1);
+    const st=ST[p];
+    let h=`<div class="pg">${fHead(L,(L.tableau+' '+L.pf).trim(),'',L.pool+' '+POOLS[p],second)}
+    <table class="pp"><tr><th>${L.pool}</th><th>${L.pn}</th><th>${L.player}</th><th>${L.lvl}</th></tr>`;
+    sorted.forEach((id,i)=>{h+=`<tr>${i===0?`<td class="pbig" rowspan="5">${POOLS[p]}</td>`:''}<td>${i+1}</td><td>${esc(up(P[id].name))}</td><td>L${P[id].tier}</td></tr>`});
+    h+='</table>';
+    const order=PLAN.days.slice(0,3).flatMap(d=>d.slots.flat()).filter(it=>it.mid.startsWith('P'+p+'_')).sort((u,v)=>u.mnum-v.mnum)   /* round by round, even when a round is split over two days */;
+    h+='<table class="mm">';
+    order.forEach((it,n)=>{
+      const x=it.x.id,y=it.y.id,r=result(it.mid,it.k),wx=r&&r.w===0?' win':'',wy=r&&r.w===1?' win':'';
+      h+=`<tr class="${it.mnum%2?'rf':''}"><td class="rn">${it.mnum%2?L.round+' '+it.round+':':''}</td><td class="k">${no[x]}</td><td class="nm${wx}">${esc(up(P[x].name))}</td><td class="dash">-</td><td class="k">${no[y]}</td><td class="nm${wy}">${esc(up(P[y].name))}</td><td class="rs">${r&&r.txt?r.txt:resTxt(r)}</td><td class="dt">${fmtDate(dateOf(it),'en')} ${timeOf(it)}</td></tr>`;
+    });
+    h+='</table>';
+    const shown=st.rows.filter(r=>r.w+r.l>0);
+    if(shown.length)h+=`<table class="cl"><caption>${L.stand} ${POOLS[p]}</caption><tr><th></th><th>${L.player}</th><th>${L.Pts}</th><th>${L.G}</th><th>${L.Pp}</th><th>${L.Mt}</th><th>${L.SA}</th><th>${L.PM}</th><th>${L.PE}</th><th>${L.Df}</th></tr>`;
+    shown.forEach((r,i)=>{const d=r.sw-r.sl;h+=`<tr class="${i<2?'qq':''}"><td class="pn2">${i+1}</td><td>${esc(up(P[r.id].name))}</td><td><b>${r.pts}</b></td><td>${r.w}</td><td>${r.l}</td><td>${r.gw}-${r.gl}</td><td>${Math.round(r.sa*10)/10}</td><td>${r.sw}</td><td>${r.sl}</td><td>${d>0?'+':''}${d}</td></tr>`});
+    return h+(shown.length?'</table>':'')+'</div>';
+  };
+  pg+=`<div class="fp">${poolBlock(0)}${poolBlock(1,true)}</div><div class="fp">${poolBlock(2)}${poolBlock(3,true)}</div>`;
+  // schedule page
+  let sc=renderSchedule(b,false);
+  pg+=`<div class="fp sched">${fHead(L,L.sched)}${sc}</div>`;
+  return pg;
+}
+
+/* ---------- render ---------- */
+function availCheck(){
+  const box=document.getElementById('avmsg');
+  [0,1,2,3,4].forEach(i=>{const e=document.getElementById('un'+i);if(e&&document.activeElement!==e)e.value=S.unav[i]||''});
+  if(!box)return;
+  const un=[0,1,2,3,4].map(d=>unavIds(d)),msgs=[];
+  const days=[];PLAN.days.forEach(d=>d.slots.forEach(sl=>sl.forEach(it=>days.push(it))));
+  const seen=new Set();let ko=false;
+  days.forEach(it=>{
+    const di=DAYISO.indexOf(dateOf(it));if(di<0)return;
+    [it.x,it.y].forEach(r=>{if(r&&r.id&&un[di].has(r.id)){const k=r.id+'|'+it.mid;if(seen.has(k))return;seen.add(k);
+      if(di>=3)ko=true;msgs.push(`${esc(P[r.id].name)} is unavailable on ${DAYSHORT[di]} but plays in ${esc(it.tag)}${it.x.id&&it.y.id?' ('+esc(P[it.x.id].name)+' vs '+esc(P[it.y.id].name)+')':''}`)}});
+  });
+  const per={};
+  days.forEach(it=>{const di=DAYISO.indexOf(dateOf(it));if(di<0)return;[it.x,it.y].forEach(r=>{if(r&&r.id){const k=r.id+'|'+di;per[k]=(per[k]||0)+1}})});
+  Object.keys(per).forEach(k=>{if(per[k]>2){const [id,di]=k.split('|');msgs.push(`${esc(P[id].name)} plays ${per[k]} matches on ${DAYSHORT[+di]} (maximum 2 a day)`)}});
+  const unk=[],amb=[];[0,1,2,3,4].forEach(d=>{unavUnknown(d).forEach(t=>unk.push(`"${esc(t)}" (${DAYSHORT[d]})`));unavAmbig(d).forEach(t=>amb.push(`"${esc(t)}" (${DAYSHORT[d]})`))});
+  let h='';
+  if(unk.length)h+=`<div>Name not found in the player lists: ${unk.join(', ')}</div>`;
+  if(amb.length)h+=`<div>More than one player has this name, all of them are marked unavailable: ${amb.join(', ')}. Use the full name.</div>`;
+  msgs.forEach(m=>h+=`<div>${m}</div>`);
+  const any=[0,1,2,3,4].some(d=>un[d].size);
+  box.className=(unk.length||amb.length||msgs.length)?'avwarn':(any?'avok':'');
+  box.innerHTML=h||(any?'Availability respected: nobody is scheduled on a day he cannot play.':'');
+  if(ko)box.innerHTML+='<div class="note">Thursday and Friday matches depend on the results, so they cannot be moved: tell the player or change the time of that match.</div>';
+}
+const nm=ref=>ref.id?`${esc(P[ref.id].name)}`:`<span class="ph">${esc(ref.label)}</span>`;
+function gameInputs(mid,k,enabled){
+  const pool=isPool(mid),n=nSets(mid),s=poolS(mid,k),gs=s.g.map(gameRes),need3=thirdNeeded(gs);
+  const tip=' title="Valid scores: 21-0 up to 21-19, or with a 2-point lead when the loser has 21 or more (23-21, 24-22, 25-23...)."';
+  let h='<span class="gms">',wa=0,wb=0;
+  for(let gi=0;gi<n;gi++){
+    const off=pool?(gi===2&&!need3):(wa===3||wb===3);   // pool: set 3 only if 1-1; knockout: no more sets once somebody has 3
+    const bad=gs[gi]&&gs[gi].invalid&&!off?' bad':'';
+    const dis=(enabled&&!s.wo&&!off)?'':' disabled';
+    const inp=f=>{const ph=s.wo?(s.wo===f?'WO':'W'):'';return `<input class="sc g${bad}${s.wo?' wod':''}${off?' offg':''}" type="text" inputmode="numeric" maxlength="2" autocomplete="off" data-mid="${mid}" data-k="${esc(k)}" data-g="${gi}" data-f="${f}" data-focus="${mid}:${gi}:${f}" value="${off?'':s.g[gi][f]}" placeholder="${ph}"${dis}${pool&&gi===2?' title="Third set: only if the first two sets are 1-1"':tip}>`};
+    h+=`<span class="gm${off?' off':''}"><span class="gl">S${gi+1}</span>${inp('a')}<span class="sep">-</span>${inp('b')}</span>`;
+    if(gs[gi]&&gs[gi].w!==undefined&&!off)gs[gi].w===0?wa++:wb++;
+  }
+  return h+'</span>';
+}
+function woSelect(mid,k,cur,labels,cls){
+  const o=(v,t)=>`<option value="${v}"${cur===v?' selected':''}>${t}</option>`;
+  return `<select class="woS ${cls||''}" data-wo="1" data-mid="${mid}" data-k="${esc(k)}" title="Walkover: if a player did not come, the opponent wins the match">${o('',labels[0])}${o('a',labels[1])}${o('b',labels[2])}</select>`;
+}
+
+function renderPool(p){
+  const ids=S.pools[p],st=standings(p);ST[p]=st;
+  const sorted=ids.slice().sort((a,b)=>P[a].tier-P[b].tier);
+  let h=`<div class="pool p${POOLS[p]}"><div class="pool-h">Pool ${POOLS[p]}<small>${st.rows.reduce((a,r)=>a+r.w,0)}/10 matches played</small></div><div class="pool-b">`;
+  h+=`<div class="plist">${sorted.map(id=>`<div><span class="badge">L${P[id].tier}</span>${esc(P[id].name)}</div>`).join('')}</div>`;
+  const order=PLAN.days.slice(0,3).flatMap(d=>d.slots.flat()).filter(it=>it.mid.startsWith('P'+p+'_')).sort((u,v)=>u.mnum-v.mnum)   /* round by round, even when a round is split over two days */;
+  order.forEach((it,n)=>{
+      const mid=it.mid,k=it.k,x=it.x.id,y=it.y.id,r=result(mid,k);
+      const wx=r&&r.w===0?' w':'',wy=r&&r.w===1?' w':'';
+      const wo=getScore(mid,k).wo||'';
+      const ax=wo==='a'?' abs':'',ay=wo==='b'?' abs':'';
+      h+=`<div class="m${it.mnum%2?' rf':''}"><span class="rn">${it.mnum%2?'Round '+it.round+':':''}</span><span class="l${wx}${ax}">${esc(P[x].name)}</span>${gameInputs(mid,k,true)}<span class="${wy}${ay}">${esc(P[y].name)}</span>${woSelect(mid,k,wo,['WO','&#9664; absent','absent &#9654;'])}${timeInput(it)}</div>`;
+  });
+  const shown=st.rows.filter(r=>r.w+r.l>0);   // a player appears in the table after his first match
+  if(shown.length)h+=`<table class="st"><tr><th>#</th><th>Player</th><th>Pts</th><th>W</th><th>L</th><th>Sets</th><th>SA %</th><th>Points</th><th>+/-</th></tr>`;
+  shown.forEach((r,i)=>{
+    const cls=i<2?(st.done?'q':'pq'):'';
+    h+=`<tr class="${cls}"><td>${i+1}</td><td>${esc(P[r.id].name)}</td><td><b>${r.pts}</b></td><td>${r.w}</td><td>${r.l}</td><td>${r.gw}-${r.gl}</td><td>${Math.round(r.sa*10)/10}</td><td>${r.sw}-${r.sl}</td><td>${r.sw-r.sl>0?'+':''}${r.sw-r.sl}</td></tr>`;
+  });
+  h+=`${shown.length?'</table>':''}<div class="note">Each pair plays one match of 2 sets; if they are 1-1, a third set decides the match. The winner of a match gets 2 points, the loser 1 point. A pool has 5 rounds of 2 matches; one player rests in each round. If a player does not come (WO), the present player wins and gets 2 points and the absent player gets 0. Ranking: 1) points; 2) if tied, the highest SA (SA = sets won / sets played x 100, walkovers not counted); 3) if still tied, the winner of their match (with 3 or more: results among them); 4) if still equal, the higher (points marked - points received).${st.done?' <b>Pool complete.</b>':''}</div></div></div>`;
+  return h;
+}
+
+function renderBM(m,title){
+  const wa=m.win===m.x?' w':'',wb=m.win===m.y?' w':'';
+  const it=PLAN.map[m.mid],r=m.r;
+  const sc=r&&r.w!==undefined?(r.wo?'WO':`<b>${r.a} - ${r.b}</b>`):'';
+  return`<div class="bm"><div class="id">${title}${it?' &middot; '+timeOf(it):''}</div>
+   <div class="kr"><span class="${wa}">${nm(m.x)}</span><span class="ksc">${sc}</span><span class="${wb}">${nm(m.y)}</span></div>
+   ${m.ready?gameInputs(m.mid,m.k,true):''}
+   ${m.ready?`<div class="bmsel">${it?timeInput(it):''}</div><div class="bmsel2">`:''}${m.ready?woSelect(m.mid,m.k,getScore(m.mid,m.k).wo||'',['Walkover: none',esc(P[m.x.id].name)+' absent',esc(P[m.y.id].name)+' absent'],'bmwo')+'</div>':''}</div>`;
+}
+
+function render(){
+  const act=document.activeElement&&document.activeElement.dataset?document.activeElement.dataset.focus:null;
+  const caret=act&&typeof document.activeElement.selectionStart==='number'?document.activeElement.selectionStart:null;
+  const app=document.getElementById('app');
+  P=getPlayers();
+  if(!validLists(S.text)){app.innerHTML='<div class="empty">Please provide 5 lines of 4 names each.</div>';return}
+  if(!S.pools&&ONLINE&&!ADMIN){app.innerHTML='';document.getElementById('ftt').innerHTML='<div class="empty" style="padding:30px;text-align:center;color:#567">The organiser has not drawn the pools yet. This page updates automatically.</div>';return}
+  if(!S.pools){
+    const L=parseText(S.text);
+    app.innerHTML=`<h2>Players by level</h2><div class="panel"><div class="tiers">${L.map((r,i)=>`<div class="tier"><b>Level ${i+1}${i===0?' (strongest)':i===4?' (weakest)':''}</b>${r.map(n=>`<span>${esc(dispName(n))}</span>`).join('')}</div>`).join('')}</div>
+    <div class="empty">Click <b>Draw pools</b> — each pool receives exactly one player from every level.</div></div>`;
+    document.getElementById('ftt').innerHTML='';
+    return;
+  }
+  ST=[];
+  PLAN=computePlan(null);
+  const poolsHtml=POOLS.map((_,p)=>renderPool(p)).join('');
+  const b=buildBracket();
+  PLAN=computePlan(b);
+  let h=`<h2>Match schedule</h2>${renderSchedule(b)}<h2>Group stage</h2><div class="pools">${poolsHtml}</div>
+  <h2>Knockout stage</h2><div class="panel" style="overflow-x:auto"><div class="bracket">
+    <div class="col"><h3>Quarter-finals<small class="dy">Thu 12 Nov</small></h3>${b.q.map((m,i)=>renderBM(m,'QF'+(i+1))).join('')}</div>
+    <div class="col"><h3>Semi-finals<small class="dy">Thu 12 Nov</small></h3>${renderBM(b.s1,'SF1')}${renderBM(b.s2,'SF2')}</div>
+    <div class="col"><h3>Final<small class="dy">Fri 13 Nov</small></h3>${renderBM(b.f,'Final')}<h3>3rd / 4th place<small class="dy">Fri 13 Nov</small></h3>${renderBM(b.t,'3rd place')}</div>
+  </div>`;
+  if(b.f.win)h+=`<div class="champ">🏆 Champion: ${esc(P[b.f.win.id].name)}</div>`;
+  h+=`<div class="note">Quarter-finals: 1st of a pool vs 2nd of the paired pool (A1–B2, C1–D2, B1–A2, D1–C2). The 1st and 2nd of a pool sit in opposite halves of the bracket, so they can only meet again in the final.</div></div>`;
+  app.innerHTML=h;
+  availCheck();
+  syncPoolsBox();
+  if(document.body.classList.contains('slips'))renderSlips();
+  document.getElementById('ftt').innerHTML=renderFTT(b);
+  if(act){const el=document.querySelector(`[data-focus="${act}"]`);if(el){el.focus();if(caret!==null){try{el.setSelectionRange(caret,caret)}catch(e){}}}}
+  if(ONLINE&&!ADMIN)document.querySelectorAll('#app input,#app select').forEach(e=>{e.disabled=true})
+}
+
+/* ---------- events ---------- */
+document.addEventListener('change',e=>{
+  const t=e.target;
+  if(/^un[0-4]$/.test(t.id||'')){S.unav[+t.id[2]]=t.value.trim();S.pin=false;save();render();return}   // a changed availability recomputes the schedule
+  if(/^st[0-4]$/.test(t.id||'')){if(/^\d\d:\d\d$/.test(t.value)){S.starts[+t.id[2]]=t.value;save();render()}return}
+  if(t.id==='kdur'){const v=Math.round(+t.value);if(v>=10&&v<=240){S.kdur=v;save();render()}return}
+  if(t.id==='dur'){const v=Math.round(+t.value);if(v>=5&&v<=120){S.dur=v;save();render()}return}
+  if(t.id==='tbl'){S.tables=+t.value;save();render();return}
+  if(t.dataset&&t.dataset.tm){const it=PLAN.map[t.dataset.mid];if(/^\d{4}-\d\d-\d\dT\d\d:\d\d$/.test(t.value)&&(!it||t.value!==it.date+'T'+it.time))S.times[t.dataset.mid]=t.value;else delete S.times[t.dataset.mid];save();render();return}
+  if(!t.dataset||!t.dataset.wo)return;
+  const mid=t.dataset.mid,k=t.dataset.k;
+  if(t.value)S.scores[mid]={a:'',b:'',k,wo:t.value};else delete S.scores[mid];
+  save();render();
+});
+document.addEventListener('input',e=>{
+  const t=e.target;if(!t.dataset||!t.dataset.mid||!t.dataset.f||t.tagName!=='INPUT')return;
+  const mid=t.dataset.mid,k=t.dataset.k;
+  if(t.dataset.g===undefined)return;
+  const s=poolS(mid,k);S.scores[mid]=s;
+  s.g[+t.dataset.g][t.dataset.f]=t.value.replace(/[^0-9]/g,'').slice(0,2);
+  trimSets(mid,s);
+  save();render();
+});
+function trimSets(mid,s){   // clear sets that are no longer needed
+  const gs=s.g.map(gameRes);
+  if(isPool(mid)){if(gs[0]&&gs[1]&&gs[0].w!==undefined&&gs[1].w!==undefined&&gs[0].w===gs[1].w)s.g[2]={a:'',b:''};return}
+  let wa=0,wb=0;
+  s.g.forEach((g,i)=>{if(wa===3||wb===3){s.g[i]={a:'',b:''};return}const r=gs[i];if(r&&r.w!==undefined)r.w===0?wa++:wb++});
+}
+function findPl(pls,w){   // full name, first name, family name, or any single word of the name
+  const L=x=>String(x).toLowerCase().replace(/_/g,' ').replace(/\s+/g,' ').trim();w=L(w);
+  let m=pls.filter(pl=>L(pl.name)===w);if(m.length)return m;
+  m=pls.filter(pl=>L(pl.first)===w||(pl.family&&L(pl.family)===w));if(m.length)return m;
+  return pls.filter(pl=>L(pl.name).split(' ').includes(w));
+}
+let PDIRTY=false;
+function syncPoolsBox(){
+  const b=document.getElementById('ptxt');if(!b||PDIRTY||document.activeElement===b)return;
+  b.value=S.pools?S.pools.map((ids,p)=>POOLS[p]+': '+ids.map(id=>P[id].name).join(', ')).join('\n'):'';
+}
+const $=id=>document.getElementById(id);
+$('restoresched').onclick=()=>{
+  const nz=t=>String(t).trim().split('\n').map(l=>l.trim().replace(/\s+/g,' ')).filter(Boolean).join('\n').toLowerCase();
+  if(nz(S.text)!==nz(DEFAULT_TEXT)){alert('The player list is not the default one, so the default draw cannot be restored. Put the default list back first.');return}
+  if(!confirm('Restore the draw and the schedule that were sent to the players (6 Nov)?'))return;
+  if(JSON.stringify(S.pools)!==JSON.stringify(DEFAULT_POOLS)){S.scores={};S.times={}}
+  S.pools=DEFAULT_POOLS.map(a=>a.slice());S.pin=true;save();render();
+};
+$('ptxt').oninput=()=>{PDIRTY=true};
+$('pset').onclick=()=>{
+  const pls=Object.values(getPlayers()),errs=[],res=[],seen=new Set(),say=m=>{$('pmsg').textContent=m};
+  const lines=$('ptxt').value.split('\n').map(l=>l.trim()).filter(Boolean);
+  if(lines.length!==4){say('Need 4 lines: pools A to D, 5 players each.');return}
+  lines.forEach((l,pi)=>{
+    l=l.replace(/^[A-Da-d]\s*[:\-]\s*/,'');
+    const ents=/[,;]/.test(l)?l.split(/[,;]/).map(x=>x.trim()).filter(Boolean):l.split(/\s+/);
+    if(ents.length!==5)errs.push(`Pool ${POOLS[pi]} needs 5 players (found ${ents.length}).`);
+    const ids=[];
+    ents.forEach(e=>{const m=findPl(pls,e);
+      if(!m.length)errs.push(`"${e}" not found.`);
+      else if(m.length>1)errs.push(`"${e}" matches ${m.length} players: use the full name.`);
+      else{if(seen.has(m[0].id))errs.push(`${m[0].name} appears twice.`);seen.add(m[0].id);ids.push(m[0].id)}});
+    res.push(ids);
+  });
+  if(!errs.length){
+    res.forEach((ids,pi)=>{if(ids.map(id=>id.split('-')[0]).sort().join()!=='0,1,2,3,4')errs.push(`Pool ${POOLS[pi]} needs exactly one player of each level.`)});
+    if(seen.size!==20)errs.push('All 20 players must be used once.');
+  }
+  if(errs.length){say(errs.join(' '));return}
+  if(S.pools&&!confirm('Replace the current pools by these pools?'))return;
+  S.pools=res.map(ids=>ids.slice().sort((a,b)=>a.split('-')[0]-b.split('-')[0]));
+  S.pin=JSON.stringify(S.pools)===JSON.stringify(DEFAULT_POOLS);
+  PDIRTY=false;say(S.pin?'Pools set: this is the default draw, the default schedule is used.':'Pools set.');save();render();
+};
+$('draw').onclick=()=>{if(!S.pools||confirm('Draw again? Current pools and scores will be replaced.')||!Object.keys(S.scores).length)draw()};
+$('clear').onclick=()=>{if(confirm('Clear all scores?')){S.scores={};save();render()}};
+$('print').onclick=()=>window.print();
+function renderSlips(){
+  const box=document.getElementById('slipsbody');if(!box)return;
+  if(!S.pools){box.innerHTML='<p>Draw the pools first.</p>';return}
+  const f=document.getElementById('sday').value;
+  const who=r=>r&&r.id?esc(P[r.id].name):`<i>${esc((r&&r.label)||'')}</i>`;
+  const slip=(it,n,tn)=>{
+    const pool=it.mid.charAt(0)==='P',cols=pool?3:5;
+    let th='<th class="nm"></th>',ta='',tb='';
+    for(let c=1;c<=cols;c++){const off=pool&&c===3;th+=`<th class="${off?'off':''}">S${c}</th>`;ta+=`<td class="${off?'off':''}"></td>`;tb+=`<td class="${off?'off':''}"></td>`}
+    return `<div class="sl"><div class="sh"><b>${esc(it.tag)}</b><span>No. ${n}</span></div>
+      <div class="si">${esc(fmtDate(dateOf(it),'en'))} &middot; ${esc(timeOf(it))} &middot; Table ${tn}</div>
+      <table class="s2"><tr>${th}</tr><tr><td class="nm">${who(it.x)}</td>${ta}</tr><tr><td class="nm">${who(it.y)}</td>${tb}</tr></table></div>`};
+  let h='<div class="sg">',n=0,first=true;
+  PLAN.days.forEach((d,di)=>{
+    const rows=[];d.slots.forEach(sl=>sl.forEach((it,ti)=>{n++;rows.push([it,n,ti+1])}));
+    if(f!=='all'&&String(di)!==f)return;
+    h+=`<div class="sd${first?'':' pb'}">${esc(d.label)} &middot; ${rows.length} matches</div>`;first=false;
+    rows.forEach(([it,k,tn])=>h+=slip(it,k,tn));
+  });
+  box.innerHTML=h+'</div>';
+}
+$('slipbtn').onclick=()=>{
+  const on=document.body.classList.toggle('slips');
+  if(on){document.body.classList.remove('prev');$('prev').textContent='Preview sheets';renderSlips()}
+  $('slipbtn').textContent=on?'Back to tournament':'Score sheets';window.scrollTo(0,0);
+};
+$('sday').onchange=renderSlips;
+$('sprint').onclick=()=>window.print();
+$('prev').onclick=()=>{if(document.body.classList.contains('slips')){document.body.classList.remove('slips');$('slipbtn').textContent='Score sheets'}const on=document.body.classList.toggle('prev');$('prev').textContent=on?'Back to tournament':'Preview sheets';window.scrollTo(0,0)};
+[['mt','name'],['md','dates'],['mr','ref']].forEach(([id,k])=>{$(id).value=S.meta[k];$(id).onchange=e=>{S.meta[k]=e.target.value;save();render()}});
+$('txt').value=S.text;
+/* Match every new entry to the old player of the same position in the same level: an old name (or any of its parts) must be inside the new full name,
+   e.g. "ouhibi" -> "Mohamed Ouhibi". The players are put back in the old order, so ids, pools, scores and schedule stay as they are.
+   One leftover pair per level (a corrected spelling, e.g. wesleti -> weslati) is accepted after a confirmation. */
+function matchLists(oldT,newT){
+  if(!validLists(oldT)||!validLists(newT))return null;
+  const O=parseText(oldT),N=parseText(newT),lines=[],fuzzy=[];
+  const parts=n=>nameParts(n).map(w=>w.toLowerCase());
+  for(let l=0;l<5;l++){
+    const op=O[l].map(parts),np=N[l].map(parts),assign=[-1,-1,-1,-1],used=new Set();
+    let prog=true;
+    while(prog){prog=false;
+      op.forEach((q,i)=>{if(assign[i]>=0)return;
+        const c=np.map((_,j)=>j).filter(j=>!used.has(j)&&q.every(w=>np[j].includes(w)));
+        if(c.length===1){assign[i]=c[0];used.add(c[0]);prog=true}});
+    }
+    const U=assign.map((a,i)=>a<0?i:-1).filter(i=>i>=0),R=[0,1,2,3].filter(j=>!used.has(j));
+    if(U.length===1&&R.length===1){assign[U[0]]=R[0];fuzzy.push({old:dispName(O[l][U[0]]),nw:dispName(N[l][R[0]])})}
+    else if(U.length||R.length)return null;
+    lines.push(assign.map(j=>N[l][j]).join(', '));
+  }
+  return{text:lines.join('\n'),fuzzy};
+}
+$('load').onclick=()=>{
+  const t=$('txt').value;
+  if(!validLists(t)){$('msg').textContent='Need exactly 5 non-empty lines with 4 players each (separated by spaces, or by commas when family names are used).';return}
+  const mt=S.pools||S.text?matchLists(S.text,t):null;
+  if(mt&&(!mt.fuzzy.length||confirm('These are treated as the same player (spelling corrected):\n'+mt.fuzzy.map(f=>f.old+' -> '+f.nw).join('\n')+'\n\nOK = same player, the draw and scores stay. Cancel = different players.'))){
+    S.text=mt.text;save();$('txt').value=mt.text;render();
+    $('msg').textContent='Names updated. The draw, scores and schedule are unchanged.'+(mt.fuzzy.length?' Same player: '+mt.fuzzy.map(f=>f.old+' -> '+f.nw).join(', ')+'.':'');return;
+  }
+  if(S.pools&&!confirm('The players changed: the pools will be drawn again and all scores and match times cleared. Continue?'))return;
+  $('msg').textContent='';S.text=t;S.pools=null;S.scores={};S.times={};save();render();
+};
+$('defaults').onclick=()=>{$('txt').value=DEFAULT_TEXT};
+$('demo').onclick=()=>{
+  if(!S.pools)draw();
+  const gp=winA=>{let w,l;if(Math.random()<.15){l=21+Math.floor(Math.random()*4);w=l+2}else{w=21;l=Math.floor(Math.random()*20)}
+    return winA?{a:String(w),b:String(l)}:{a:String(l),b:String(w)}};
+  const koSets=()=>{const aW=Math.random()<.5,ls=Math.floor(Math.random()*3),n=3+ls,losses=new Set();
+    while(losses.size<ls)losses.add(Math.floor(Math.random()*(n-1)));
+    return Array.from({length:5},(_,i)=>i<n?gp(losses.has(i)?!aW:aW):{a:'',b:''})};
+  const set=(mid,k)=>{
+    if(isPool(mid)){
+      if(Math.random()<.06){S.scores[mid]={k,g:emptyG(),wo:Math.random()<.5?'a':'b'};return}
+      const g=emptyG(),pick=()=>gp(Math.random()<.5);
+      g[0]=pick();g[1]=pick();
+      if(!thirdNeeded(g.map(gameRes)))g[2]={a:'',b:''};else g[2]=pick();
+      S.scores[mid]={k,g};return;
+    }
+    S.scores[mid]={k,g:koSets()}};
+  S.scores={};
+  S.pools.forEach((ids,p)=>schedule(ids,p).forEach(rd=>rd.m.forEach(([x,y])=>set(`P${p}_${x}_${y}`,x+'|'+y))));
+  save();
+  // fill knockout progressively
+  for(let i=0;i<4;i++){
+    ST=[];POOLS.forEach((_,p)=>ST[p]=standings(p));
+    const b=buildBracket();
+    [...b.q,b.s1,b.s2,b.f,b.t].forEach(m=>{if(m.ready&&!(m.r&&m.r.w!==undefined))set(m.mid,m.k)});
+  }
+  save();render();
+};
+$('backup').onclick=()=>{
+  const blob=new Blob([JSON.stringify(S,null,1)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='pingpong-tournament-'+new Date().toISOString().slice(0,16).replace(/[:T]/g,'-')+'.json';
+  document.body.appendChild(a);a.click();a.remove();
+};
+$('restore').onclick=()=>$('file').click();
+$('file').onchange=e=>{
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{const d=JSON.parse(r.result);if(!d.text)throw 0;S=norm(d);$('txt').value=S.text;save();render()}catch(x){alert('This file is not a valid backup.')}};
+  r.readAsText(f);e.target.value='';
+};
+/* The old default list (first names only) is replaced by the new list with full names; the players keep their place, so the draw, scores and schedule stay. */
+const OLD_DEFAULT='zied ouhibi dagdoug louhichi\nbilel frikha wesleti wadie\nbaha krayma aloui edam\nseif hamza houati ala\nines yengui iheb ali';
+let MIGRATED=false;
+function migrateText(d){
+  const nz=t=>String(t).trim().split('\n').map(l=>l.trim().replace(/\s+/g,' ')).filter(Boolean).join('\n').toLowerCase();
+  if(!d||!d.text||nz(d.text)!==nz(OLD_DEFAULT))return false;
+  const mt=matchLists(d.text,DEFAULT_TEXT);if(!mt)return false;
+  d.text=mt.text;MIGRATED=true;return true;
+}
+if(migrateText(S)){save();$('txt').value=S.text}
+// validate stored lists against current text
+if(S.pools&&!S.pools.flat().every(id=>getPlayers()[id]))S.pools=null;
+render();setStatus();
+idbGet().then(d=>{
+  if(!d||TRYING||ONLINE)return;
+  if(storageMode==='none')storageMode='idb';
+  if(d.ts&&d.ts>(S.ts||0)){S=norm(d);$('txt').value=S.text;render()}
+  setStatus();
+}).catch(()=>{});
+window.addEventListener('pagehide',()=>{if(ONLINE){if(ADMIN&&pushT){clearTimeout(pushT);pushNow()}return}if(S&&S.ts)save()});
+$('login').onclick=async()=>{
+  if(ADMIN){ADMIN=false;PINV='';sessionStorage.removeItem('ttpin');applyMode();render();return}
+  const pin=prompt('Organiser PIN:');if(!pin)return;
+  if(!(await tryLogin(pin)))alert('Wrong PIN, or the server is not reachable.');
+};
+(async function goOnline(){
+  if(!TRYING)return;
+  try{
+    const r=await fetch('/api/state?v=-1',{cache:'no-store'}),j=await r.json();
+    if(typeof j.v!=='number')throw new Error('no server');
+    ONLINE=true;TRYING=false;LOCALS=S;SRV_V=j.v;SRV_HAS=!!j.state;
+    S=j.state?norm(j.state):fresh();
+    syncInputs();applyMode();render();
+    if(PINV&&!(await tryLogin(PINV))){PINV='';sessionStorage.removeItem('ttpin')}
+    pollLoop();
+  }catch(e){TRYING=false}
+  document.body.classList.remove('liveload');
+})();
+</script>
+</body>
+</html>
