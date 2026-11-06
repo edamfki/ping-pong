@@ -191,6 +191,7 @@ body.slips main,body.slips #ftt{display:none!important}
 </head>
 <body>
 <script>if(location.protocol.indexOf('http')===0)document.body.classList.add('liveload')</script>
+<script src="config.js"></script>
 <header>
   <h1>Ping Pong Tournament <small>4 pools of 5 · one match per pair · top 2 qualify · cross-over quarter-finals</small></h1>
   <div class="controls">
@@ -305,9 +306,75 @@ function idbGet(){return idb().then(db=>new Promise((res,rej)=>{
 function lsGet(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}}
 /* ---- live mode: when the page is served by server.py everybody sees the same data; the organiser (PIN) edits ---- */
 let ONLINE=false,ADMIN=false,TRYING=location.protocol.indexOf('http')===0,PINV=sessionStorage.getItem('ttpin')||'',SRV_V=-1,SRV_HAS=false,LOCALS=null,pushT=null;
+/* ---- data access: Firebase (config.js has a firebase block), or Supabase (url + key), otherwise the Python server (/api/...) ---- */
+const CFG=window.PP_CONFIG||{},FBC=CFG.firebase||{},FB=!!(FBC.apiKey&&FBC.databaseURL&&FBC.organiserEmail),
+  SUPA=!FB&&!!(CFG.supabaseUrl&&CFG.supabaseKey),POLLMS=(FB||SUPA)?3000:2000;
+/* Firebase: Realtime Database over REST. Everybody reads /tournament; only the organiser account (Authentication, email + password) may write. */
+const FBDB=(FBC.databaseURL||'').replace(/\/+$/,''),FBAUTH=FBC.authHost||'https://identitytoolkit.googleapis.com',FBTOK=FBC.tokenHost||'https://securetoken.googleapis.com';
+let fbTok={id:'',refresh:'',exp:0},CONNERR='';
+async function fbSignIn(pw){
+  const r=await fetch(FBAUTH+'/v1/accounts:signInWithPassword?key='+encodeURIComponent(FBC.apiKey),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:FBC.organiserEmail,password:pw,returnSecureToken:true})});
+  if(!r.ok)return false;
+  const j=await r.json();fbTok={id:j.idToken,refresh:j.refreshToken,exp:Date.now()+(+j.expiresIn||3600)*1000};return true;
+}
+async function fbToken(pw){
+  if(fbTok.id&&Date.now()<fbTok.exp-90000)return fbTok.id;
+  if(fbTok.refresh){
+    try{const r=await fetch(FBTOK+'/v1/token?key='+encodeURIComponent(FBC.apiKey),{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'grant_type=refresh_token&refresh_token='+encodeURIComponent(fbTok.refresh)});
+      if(r.ok){const j=await r.json();fbTok={id:j.id_token,refresh:j.refresh_token,exp:Date.now()+(+j.expires_in||3600)*1000};return fbTok.id}}catch(e){}
+  }
+  if(pw&&await fbSignIn(pw))return fbTok.id;
+  return '';
+}
+async function fbState(since){
+  const rv=await fetch(FBDB+'/tournament/v.json',{cache:'no-store'});if(!rv.ok)throw new Error(rv.status===401||rv.status===403?'Firebase refuses reading (error '+rv.status+'): publish the database rules, with .read true for /tournament':rv.status===404?'Firebase database not found (error 404): check databaseURL in config.js':'Firebase error '+rv.status);
+  const v=(await rv.json())||0;
+  if(v===since)return{v,unchanged:true};
+  const rs=await fetch(FBDB+'/tournament.json',{cache:'no-store'});if(!rs.ok)throw new Error('Firebase error '+rs.status);
+  const t=await rs.json();
+  return{v:(t&&t.v)||0,state:t&&t.state?JSON.parse(t.state):null};
+}
+async function fbSave(pw,state){
+  const body=JSON.stringify({state:JSON.stringify(state),v:Date.now()});
+  for(let i=0;i<2;i++){
+    const tok=await fbToken(pw);if(!tok)return{ok:false};
+    const r=await fetch(FBDB+'/tournament.json?auth='+encodeURIComponent(tok),{method:'PATCH',headers:{'Content-Type':'application/json'},body,keepalive:body.length<60000});
+    if(r.ok){const j=await r.json();return{ok:true,v:j.v}}
+    if(r.status===401||r.status===403){fbTok={id:'',refresh:'',exp:0};continue}   // expired or refused: sign in again once
+    throw new Error('db '+r.status);
+  }
+  return{ok:false};
+}
+async function rpc(fn,args,keep){
+  const h={'Content-Type':'application/json',apikey:CFG.supabaseKey};
+  if(/^eyJ/.test(CFG.supabaseKey))h.Authorization='Bearer '+CFG.supabaseKey;
+  const body=JSON.stringify(args);
+  const r=await fetch(CFG.supabaseUrl.replace(/\/+$/,'')+'/rest/v1/rpc/'+fn,{method:'POST',headers:h,body,cache:'no-store',keepalive:!!keep&&body.length<60000});
+  if(!r.ok)throw new Error('rpc '+fn+' '+r.status);
+  return r.json();
+}
+async function apiState(since){
+  if(FB)return fbState(since);
+  if(SUPA)return rpc('get_state',{since});
+  const r=await fetch('/api/state?v='+since,{cache:'no-store'});return r.json();
+}
+async function apiLogin(pin){
+  if(FB)return fbSignIn(pin);
+  if(SUPA)return (await rpc('check_pin',{p:pin}))===true;
+  const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin})});
+  const j=await r.json();return !!j.ok;
+}
+async function apiSave(pin,state){   // -> {ok:true,v} or {ok:false} when the PIN is refused
+  if(FB)return fbSave(pin,state);
+  if(SUPA){const j=await rpc('save_state',{p:pin,s:state},true);return j&&j.ok?{ok:true,v:j.v}:{ok:false}}
+  const r=await fetch('/api/state',{method:'POST',headers:{'Content-Type':'application/json','X-PIN':pin},body:JSON.stringify(state),keepalive:true});
+  if(r.status===403)return{ok:false};
+  const j=await r.json();return{ok:true,v:j.v};
+}
 function setStatus(){
   const el=document.getElementById('status');if(!el)return;
   if(ONLINE){el.className='status ok';el.textContent=ADMIN?'LIVE - organiser (saved on server)':'LIVE - read-only view';return}
+  if(CONNERR){el.className='status warn';el.textContent='Live database not reachable - '+CONNERR+' (this page is NOT shared)';el.title=CONNERR;return}
   if(storageMode==='none'){el.className='status warn';el.textContent='Not saved - use Backup'}
   else{el.className='status ok';el.textContent='Saved automatically'}
 }
@@ -323,9 +390,9 @@ function pushSoon(){clearTimeout(pushT);pushT=setTimeout(pushNow,250)}
 async function pushNow(){
   pushT=null;
   try{
-    const r=await fetch('/api/state',{method:'POST',headers:{'Content-Type':'application/json','X-PIN':PINV},body:JSON.stringify(S),keepalive:true});
-    if(r.status===403){ADMIN=false;PINV='';sessionStorage.removeItem('ttpin');applyMode();render();alert('The PIN was not accepted - you are now in read-only mode.');return}
-    const j=await r.json();SRV_V=j.v;SRV_HAS=true;setStatus();
+    const j=await apiSave(PINV,S);
+    if(!j.ok){ADMIN=false;PINV='';sessionStorage.removeItem('ttpin');applyMode();render();alert('The PIN was not accepted - you are now in read-only mode.');return}
+    SRV_V=j.v;SRV_HAS=true;setStatus();
   }catch(e){const el=document.getElementById('status');if(el){el.className='status warn';el.textContent='Server not reachable - NOT saved'}}
 }
 function applyMode(){
@@ -339,8 +406,7 @@ function applyMode(){
 function syncInputs(){const t=document.getElementById('txt');if(t)t.value=S.text;[['mt','name'],['md','dates'],['mr','ref']].forEach(([id,k])=>{const e=document.getElementById(id);if(e)e.value=S.meta[k]})}
 async function tryLogin(pin){
   try{
-    const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin})});
-    const j=await r.json();if(!j.ok)return false;
+    if(!(await apiLogin(pin)))return false;
     PINV=pin;sessionStorage.setItem('ttpin',pin);ADMIN=true;
     const seed=!SRV_HAS&&LOCALS&&LOCALS.ts;           // empty server: start from the data of this browser
     if(seed){S=LOCALS;syncInputs()}
@@ -352,12 +418,12 @@ async function tryLogin(pin){
 async function pollLoop(){
   try{
     if(ONLINE&&!ADMIN){
-      const r=await fetch('/api/state?v='+SRV_V,{cache:'no-store'}),j=await r.json();
+      const j=await apiState(SRV_V);
       if(!j.unchanged){SRV_V=j.v;SRV_HAS=!!j.state;S=j.state?norm(j.state):fresh();syncInputs();render()}
       setStatus();
     }
   }catch(e){const el=document.getElementById('status');if(el){el.className='status warn';el.textContent='Server not reachable - retrying...'}}
-  setTimeout(pollLoop,2000);
+  setTimeout(pollLoop,POLLMS);
 }
 S=norm(lsGet());
 if(S.ts)storageMode='ls';
@@ -1090,14 +1156,14 @@ $('login').onclick=async()=>{
 (async function goOnline(){
   if(!TRYING)return;
   try{
-    const r=await fetch('/api/state?v=-1',{cache:'no-store'}),j=await r.json();
+    const j=await apiState(-1);
     if(typeof j.v!=='number')throw new Error('no server');
     ONLINE=true;TRYING=false;LOCALS=S;SRV_V=j.v;SRV_HAS=!!j.state;
     S=j.state?norm(j.state):fresh();
     syncInputs();applyMode();render();
     if(PINV&&!(await tryLogin(PINV))){PINV='';sessionStorage.removeItem('ttpin')}
     pollLoop();
-  }catch(e){TRYING=false}
+  }catch(e){TRYING=false;if(FB||SUPA){CONNERR=(e&&e.message)||'network error or blocked (see the browser console)';try{console.error('Live database:',e)}catch(x){}setStatus()}}
   document.body.classList.remove('liveload');
 })();
 </script>
