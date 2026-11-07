@@ -264,6 +264,18 @@ body.slips main,body.slips #ftt{display:none!important}
  #ftt table.mm td{font-size:10.5px}
  #ftt table.mm td.nm{width:22%}
 }
+/* ---------- organiser password dialog ---------- */
+#pwov{position:fixed;inset:0;background:#0b3c4999;display:flex;align-items:center;justify-content:center;padding:16px;z-index:1000}
+#pwov form{background:#fff;border-radius:12px;padding:20px;width:100%;max-width:360px;box-shadow:0 10px 30px #0006}
+#pwov h3{margin:0 0 4px;font-size:18px;color:var(--dark)}
+#pwov p{margin:0 0 12px;font-size:13px;color:#678}
+#pwov input[type=password],#pwov input[type=text]{width:100%;font-size:16px;padding:10px;border:1px solid var(--line);border-radius:8px}
+#pwov label.sh{display:flex;gap:6px;align-items:center;margin-top:8px;font-size:13px;color:#567;cursor:pointer}
+#pwov .er{color:var(--bad);font-size:13px;margin-top:8px}
+#pwov .bt{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+#pwov .bt button{min-height:40px}
+#pwov .bt .cancel{background:#eef3f5;color:#345}
+@media print{#pwov{display:none!important}}
 </style>
 </head>
 <body>
@@ -1235,10 +1247,38 @@ idbGet().then(d=>{
   setStatus();
 }).catch(()=>{});
 window.addEventListener('pagehide',()=>{if(ONLINE){if(ADMIN&&pushT){clearTimeout(pushT);pushNow()}return}if(S&&S.ts)save()});
+
+/* organiser password dialog (a browser prompt() cannot hide what is typed) */
+function askPin(err){
+  return new Promise(res=>{
+    const ov=document.createElement('div');ov.id='pwov';
+    ov.innerHTML='<form autocomplete="on"><h3>Organiser login</h3><p>Enter the organiser password to edit.</p>'
+      +(FB?'<input type="text" name="username" autocomplete="username" value="'+esc(FBC.organiserEmail)+'" hidden>':'')
+      +'<input type="password" id="pwin" name="password" autocomplete="current-password" placeholder="Password" required>'
+      +'<label class="sh"><input type="checkbox" id="pwsh"> Show password</label>'
+      +'<div class="er" id="pwer" role="alert"></div>'
+      +'<div class="bt"><button type="button" class="cancel">Cancel</button><button type="submit" class="primary">Log in</button></div></form>';
+    document.body.appendChild(ov);
+    const f=ov.querySelector('form'),i=ov.querySelector('#pwin');
+    ov.querySelector('#pwer').textContent=err||'';
+    const done=v=>{document.removeEventListener('keydown',key,true);ov.remove();res(v)};
+    const key=e=>{if(e.key==='Escape'){e.preventDefault();done(null)}};
+    document.addEventListener('keydown',key,true);
+    ov.querySelector('#pwsh').onchange=e=>{i.type=e.target.checked?'text':'password'};
+    ov.querySelector('.cancel').onclick=()=>done(null);
+    ov.onclick=e=>{if(e.target===ov)done(null)};
+    f.onsubmit=e=>{e.preventDefault();done(i.value||null)};
+    setTimeout(()=>i.focus(),30);
+  });
+}
 $('login').onclick=async()=>{
   if(ADMIN){ADMIN=false;PINV='';sessionStorage.removeItem('ttpin');applyMode();render();return}
-  const pin=prompt('Organiser PIN:');if(!pin)return;
-  if(!(await tryLogin(pin)))alert('Login failed.'+(LOGINERR?'\n\n'+LOGINERR:'\n\nWrong PIN, or the server is not reachable.'));
+  let err='';
+  for(;;){
+    const pin=await askPin(err);if(!pin)return;
+    if(await tryLogin(pin))return;
+    err='Login failed. '+(LOGINERR||'Wrong password, or the server is not reachable.');
+  }
 };
 (async function goOnline(){
   if(!TRYING)return;
