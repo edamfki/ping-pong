@@ -311,10 +311,20 @@ const CFG=window.PP_CONFIG||{},FBC=CFG.firebase||{},FB=!!(FBC.apiKey&&FBC.databa
   SUPA=!FB&&!!(CFG.supabaseUrl&&CFG.supabaseKey),POLLMS=(FB||SUPA)?3000:2000;
 /* Firebase: Realtime Database over REST. Everybody reads /tournament; only the organiser account (Authentication, email + password) may write. */
 const FBDB=(FBC.databaseURL||'').replace(/\/+$/,''),FBAUTH=FBC.authHost||'https://identitytoolkit.googleapis.com',FBTOK=FBC.tokenHost||'https://securetoken.googleapis.com';
-let fbTok={id:'',refresh:'',exp:0},CONNERR='';
+let fbTok={id:'',refresh:'',exp:0},CONNERR='',LOGINERR='';
 async function fbSignIn(pw){
   const r=await fetch(FBAUTH+'/v1/accounts:signInWithPassword?key='+encodeURIComponent(FBC.apiKey),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:FBC.organiserEmail,password:pw,returnSecureToken:true})});
-  if(!r.ok)return false;
+  if(!r.ok){
+    let m='';try{m=((await r.json()).error||{}).message||''}catch(e){}
+    const H={EMAIL_NOT_FOUND:'No user with the email '+FBC.organiserEmail+' exists in Firebase Authentication. Add that user (Authentication > Users).',
+      INVALID_PASSWORD:'Wrong password for '+FBC.organiserEmail+'.',INVALID_LOGIN_CREDENTIALS:'Wrong password, or no user with the email '+FBC.organiserEmail+' in Firebase Authentication.',
+      OPERATION_NOT_ALLOWED:'Email/Password sign-in is not enabled in Firebase (Authentication > Sign-in method).',
+      USER_DISABLED:'This Firebase user is disabled.',TOO_MANY_ATTEMPTS_TRY_LATER:'Too many attempts. Wait a few minutes and try again.'};
+    const k=Object.keys(H).find(x=>m.indexOf(x)===0);
+    LOGINERR=k?H[k]:'Firebase answered: '+(m||('error '+r.status))+(r.status===400&&/API_KEY|referer|blocked|not valid/i.test(m)?' (check apiKey in config.js)':'');
+    return false;
+  }
+  LOGINERR='';
   const j=await r.json();fbTok={id:j.idToken,refresh:j.refreshToken,exp:Date.now()+(+j.expiresIn||3600)*1000};return true;
 }
 async function fbToken(pw){
@@ -413,7 +423,7 @@ async function tryLogin(pin){
     applyMode();render();
     if(!SRV_HAS||MIGRATED){MIGRATED=false;await pushNow()}
     return true;
-  }catch(e){return false}
+  }catch(e){if(FB)LOGINERR='Could not reach Firebase sign-in: '+((e&&e.message)||'network error')+'.';return false}
 }
 async function pollLoop(){
   try{
@@ -1151,7 +1161,7 @@ window.addEventListener('pagehide',()=>{if(ONLINE){if(ADMIN&&pushT){clearTimeout
 $('login').onclick=async()=>{
   if(ADMIN){ADMIN=false;PINV='';sessionStorage.removeItem('ttpin');applyMode();render();return}
   const pin=prompt('Organiser PIN:');if(!pin)return;
-  if(!(await tryLogin(pin)))alert('Wrong PIN, or the server is not reachable.');
+  if(!(await tryLogin(pin)))alert('Login failed.'+(LOGINERR?'\n\n'+LOGINERR:'\n\nWrong PIN, or the server is not reachable.'));
 };
 (async function goOnline(){
   if(!TRYING)return;
