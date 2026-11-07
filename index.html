@@ -187,6 +187,83 @@ body.slips main,body.slips #ftt{display:none!important}
 #ftt .sch .sdh{font-size:13px}
 #ftt table.sct{font-size:11px}
 
+/* ---------- phones and small tablets (screen only: printing and desktop are not affected) ---------- */
+@media screen and (max-width:760px){
+ html{-webkit-text-size-adjust:100%}
+ body{overflow-x:hidden}
+ /* 16px in the fields stops iOS from zooming the page when a field is tapped */
+ input,select,textarea{font-size:16px}
+ input.tmI{font-size:13px}
+ button,select{min-height:40px}
+ header{padding:10px 12px;gap:8px}
+ header h1{font-size:18px}
+ header h1 small{font-size:11px}
+ .controls{gap:6px;width:100%}
+ .controls .status{flex:1 1 100%;text-align:center;border-radius:10px;padding:6px 9px;line-height:1.3}
+ .controls button{padding:7px 11px;font-size:14px}
+ main{padding:10px}
+ h2{margin:20px 0 8px}
+ .panel{padding:10px}
+ .tiers{grid-template-columns:repeat(auto-fit,minmax(110px,1fr))}
+ /* organiser: forms */
+ .schc{gap:10px}
+ .schc label{display:flex;flex-direction:column;gap:3px;width:100%}
+ .schc label input,.schc label select{width:100%!important}
+ .schc>span{display:flex;flex-wrap:wrap;gap:8px}
+ .schc>span label{width:auto;flex:1 1 90px}
+ .schc>span.note{display:block}
+ /* organiser: pools and matches */
+ .pools{grid-template-columns:minmax(0,1fr);gap:12px}
+ .pool-b{padding:8px 10px}
+ .m{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:6px 8px;padding:8px 0}
+ .m .rn{grid-column:1/-1}.m .rn:empty{display:none}
+ .m>select{grid-column:1;width:100%}
+ .m>input.tmI{grid-column:2/4;width:100%}
+ .m>span:nth-child(2),.m>span.l{align-self:center}
+ input.sc,input.sc.g{height:38px}
+ .bracket{grid-template-columns:minmax(0,1fr);min-width:0;gap:14px}
+ .bmsel input.tmI{width:100%}
+ select.woS{width:100%}
+ select.bmwo{width:100%}
+ .champ{font-size:17px;padding:10px}
+ /* schedule: one card per match instead of a 7-column table */
+ .sch{overflow-x:visible}
+ table.sct,table.sct tbody{display:block;width:100%}
+ table.sct{font-size:14px}
+ #ftt table.sct{font-size:13px}
+ table.sct tr{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:2px 6px;padding:7px 4px;border-bottom:1px solid #e3eaee}
+ table.sct td{display:block;width:auto!important;border:0;padding:0;overflow-wrap:anywhere}
+ table.sct td.t{grid-column:1/3;grid-row:1;font-weight:700}
+ table.sct td.tb{grid-column:3/5;grid-row:1;text-align:center}
+ table.sct td.tg{grid-column:5/7;grid-row:1;text-align:right}
+ table.sct td.l{grid-column:1/4;grid-row:2;text-align:right}
+ table.sct td.vs{display:none}
+ table.sct td:nth-child(6){grid-column:4/7;grid-row:2;text-align:left}
+ table.sct td:nth-child(6)::before{content:'vs ';color:#99a;font-weight:400}
+ table.sct td.rs{grid-column:1/7;grid-row:3;text-align:center;font-weight:700;color:#345}
+ table.sct td.rs:empty{display:none}
+ table.sct td.t:empty{visibility:hidden}
+ /* viewers: the FTT-style sheets */
+ body.prev #ftt{margin:0;padding:8px;max-width:none;box-shadow:none}
+ #ftt .fh .t1{font-size:15px}
+ #ftt .fh .meta{flex-wrap:wrap;gap:4px 14px}
+ #ftt .ff{flex-direction:column;gap:12px}
+ #ftt table.pl{width:100%}
+ #ftt .br{width:100%;flex:none;overflow-x:auto;-webkit-overflow-scrolling:touch}
+ #ftt .br svg{min-width:600px}
+ #ftt .leg{flex-wrap:wrap;gap:16px}
+ #ftt .sig{min-width:0;flex:1 1 200px}
+ #ftt table.mm td.rs{width:auto}
+ #ftt table.mm td.dt{width:auto;white-space:normal}
+ /* score slips: one per row on a phone */
+ body.slips #slips{max-width:none;margin:0;padding:8px}
+ #slips .sg{grid-template-columns:minmax(0,1fr)}
+}
+@media screen and (max-width:420px){
+ .controls button{padding:6px 9px;font-size:13px}
+ #ftt table.mm td{font-size:10.5px}
+ #ftt table.mm td.nm{width:22%}
+}
 </style>
 </head>
 <body>
